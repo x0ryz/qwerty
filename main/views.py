@@ -1,34 +1,24 @@
-from django.views import generic
-from .models import Product, Category, Model
+from django.shortcuts import get_object_or_404, render
 
-class CatalogView(generic.ListView):
-    model = Product
-    template_name = "main/product/catalog.html"
-    context_object_name = "products"
+from .models import Category, Product
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        category_slugs = self.request.GET.getlist('category')
-        model_names = self.request.GET.getlist('model')
-        min_price = self.request.GET.get('min_price')
-        max_price = self.request.GET.get('max_price')
 
-        if category_slugs: 
-            queryset = queryset.filter(category__slug__in=category_slugs)
+def product_list(request, category_slug=None):
+    category = None
+    categories = Category.objects.all()
+    products = Product.objects.filter(available=True)
 
-        if model_names:
-            queryset = queryset.filter(model__name__in=model_names)
+    if category_slug:
+        category = get_object_or_404(Category, slug=category_slug)
+        products = products.filter(category=category)
 
-        if min_price:
-            queryset = queryset.filter(price__gte=min_price)
+    return render(
+        request,
+        "main/product/list.html",
+        {"category": category, "categories": categories, "products": products},
+    )
 
-        if max_price:
-            queryset = queryset.filter(price__lte=max_price)
 
-        return queryset
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
-        context['models'] = Model.objects.all()
-        return context
+def product_detail(request, slug):
+    product = get_object_or_404(Product, slug=slug, available=True)
+    return render(request, "main/product/detail.html", {"product": product})
