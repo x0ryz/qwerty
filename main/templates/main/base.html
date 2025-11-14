@@ -1,15 +1,110 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <title>{% block title %}QWERTY shop{% endblock %}</title>
     <link href="{% static "css/base.css" %}" rel="stylesheet">
 </head>
+
 <body>
-    <header class="header"></header>
+    <header class="header">
+        <div class="container">
+            <div class="header-wrapper wrapper">
+                <div class="header-navbar">
+                    <a class="header-logo" href="/">QWERTY</a>
+                    <nav class="header-menu">
+                        <a class="menu-link" href="{% url "main:product_list" %}">Каталог</a>
+                        <a class="menu-link" href="">Контакти</a>
+                        <a class="menu-link" href="">Про нас</a>
+                    </nav>
+                </div>
+                <div class="header-links">
+                    <a class="header-link" href="{% url "cart:cart_detail" %}">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M16.0058 15.3789H9.72019C9.26185 15.3789 8.86219 15.0673 8.75039 14.6228L6.85731 7.09572H16.0002H18.5223C19.2299 7.09572 19.7137 7.81059 19.4506 8.46751L16.9342 14.7507C16.7822 15.1302 16.4146 15.3789 16.0058 15.3789Z"
+                                fill="#CFCFCF" />
+                            <path
+                                d="M6.85731 7.09572L6.44961 5.4353C6.35096 5.03353 6.0151 4.73399 5.6047 4.68176L4 4.47754M6.85731 7.09572L8.75039 14.6228C8.86219 15.0673 9.26185 15.3789 9.72019 15.3789H16.0058C16.4146 15.3789 16.7822 15.1302 16.9342 14.7507L19.4506 8.46751C19.7137 7.81059 19.2299 7.09572 18.5223 7.09572H16.0002H6.85731Z"
+                                stroke="#CFCFCF" stroke-width="1.75" stroke-miterlimit="1.88261" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path
+                                d="M9 18.0225C9.27614 18.0225 9.5 18.2463 9.5 18.5225C9.5 18.7986 9.27614 19.0225 9 19.0225C8.72386 19.0225 8.5 18.7986 8.5 18.5225C8.5 18.2463 8.72386 18.0225 9 18.0225Z"
+                                fill="#CFCFCF" stroke="#CFCFCF" />
+                            <path
+                                d="M16 18.0225C16.2761 18.0225 16.5 18.2463 16.5 18.5225C16.5 18.7986 16.2761 19.0225 16 19.0225C15.7239 19.0225 15.5 18.7986 15.5 18.5225C15.5 18.2463 15.7239 18.0225 16 18.0225Z"
+                                fill="#CFCFCF" stroke="#CFCFCF" />
+                        </svg>
+                    </a>
+                    <a class="header-link" href="#">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M5.09359 6.90641C6.80214 5.19788 9.57224 5.19787 11.2808 6.90641C11.6225 7.24812 12.1765 7.24812 12.5182 6.90641C14.2267 5.19787 16.9969 5.19789 18.7054 6.90641C20.4139 8.61495 20.4139 11.385 18.7054 13.0936L12.9602 18.8388C12.3744 19.4246 11.4246 19.4246 10.8388 18.8388L5.09359 13.0936C3.38505 11.385 3.38505 8.61495 5.09359 6.90641Z"
+                                fill="#CFCFCF" />
+                        </svg>
+                    </a>
+                    <a class="header-link" href="#">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M18.9728 16.1814C20.0808 18.0926 18.2091 20 16 20H8C5.79086 20 3.91924 18.0926 5.02723 16.1814C6.39943 13.8145 9.00789 12.2162 12 12.2162C14.9921 12.2162 17.6006 13.8145 18.9728 16.1814Z"
+                                fill="#CFCFCF" />
+                            <circle cx="11.7838" cy="7.45946" r="3.45946" fill="#CFCFCF" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+    </header>
     <main class="main">
         <div class="container">{% block content %}{% endblock %}</div>
     </main>
+    <footer class="footer">
+        <div class="footer-container container">
+            <div class="footer-wrapper wrapper">
+                <div class="footer-header">
+                    <a class="footer-logo" href="/">QWERTY</a>
+                    <div class="footer-rights">
+                        © Усі права беззахисні.<br>Сподіваємось тільки на вашу совість
+                    </div>
+                </div>
+
+                <div class="footer-list">
+                    <span class="list-heading">Каталог</span>
+                    <ul class="list-items">
+                        <li class="list-item"><a class="list-link" href="#">Клавіатури</a></li>
+                        <li class="list-item"><a class="list-link" href="#">Миші</a></li>
+                        <li class="list-item"><a class="list-link" href="#">Мікрофони</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-list">
+                    <span class="list-heading">Клієнтам</span>
+                    <ul class="list-items">
+                        <li class="list-item"><a class="list-link" href="#">Обмін і повернення</a></li>
+                        <li class="list-item"><a class="list-link" href="#">Оплата і доставка</a></li>
+                        <li class="list-item"><a class="list-link" href="#">Контактна інформація</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <a class="footer-link">
+                        <img class="footer-icon" src="" alt="YouTube">
+                    </a>
+                    <a class="footer-link">
+                        <img class="footer-icon" src="" alt="Instagram">
+                    </a>
+                    <a class="footer-link">
+                        <img class="footer-icon" src="" alt="">
+                    </a>
+                    <a class="footer-link">
+                        <img class="footer-icon" src="" alt="">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
+
 </html>

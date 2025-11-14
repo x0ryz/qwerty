@@ -15,6 +15,92 @@ body {
 }
 
 .wrapper {
-    display: flex;
-    justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
+}
+
+.header-wrapper {
+  margin: 12px auto;
+}
+
+.header-logo {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.header-navbar {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.header-menu {
+  display: flex;
+  gap: 24px;
+}
+
+.menu-link {
+  font-size: 16px;
+  color: #333;
+}
+
+.header-links {
+  display: flex;
+  gap: 8px;
+}
+
+.header-link {
+  height: 24px;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-container {
+  margin: 12px auto;
+}
+
+.footer-wrapper {
+  align-items: start;
+}
+
+.footer-logo {
+  font-style: 18px;
+  margin-bottom: 8px;
+}
+
+.footer-rights {
+  font-weight: 300;
+  font-size: 11px;
+}
+
+.footer-heading {
+  margin-bottom: 8px;
+  display: inline-block;
+  font-size: 16px;
+}
+
+.footer-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.list-items {
+  padding-left: 12px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 5px;
+}
+
+.footer-link {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
