@@ -21,7 +21,11 @@
                     </nav>
                 </div>
                 <div class="header-links">
-                    <a class="header-link" href="{% url "cart:cart_detail" %}">
+                    <a class="header-link cart-btn" href="{% url "cart:cart_detail" %}">
+                        {% if cart.get_unique_count > 0 %}
+                            <span class="cart-badge">{{ cart.get_unique_count }}</span>
+                        {% endif %}
+
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path
                                 d="M16.0058 15.3789H9.72019C9.26185 15.3789 8.86219 15.0673 8.75039 14.6228L6.85731 7.09572H16.0002H18.5223C19.2299 7.09572 19.7137 7.81059 19.4506 8.46751L16.9342 14.7507C16.7822 15.1302 16.4146 15.3789 16.0058 15.3789Z"

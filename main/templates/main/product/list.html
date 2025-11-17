@@ -20,13 +20,14 @@
                 {% endfor %}
             </ul>
         </sidebar>
-        <div class="main-list">
+        <div class="products">
             {% for product in products %}
-                <a class="item" href="{{ product.get_absolute_url }}">
-                    <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static "img/no_image.png" %}{% endif %}">
-                    <span>{{ product.name }}</span>
-                    <br>
-                    ${{ product.price }}
+                <a class="product-item" href="{{ product.get_absolute_url }}">
+                    <div class="product-poster">
+                        <img class="poster-image" src="{% if product.image %}{{ product.image.url }}{% else %}{% static "img/no_image.png" %}{% endif %}" alt={{ product.slug }}>
+                    </div>
+                    <h4 class="product-name">{{ product.name }}</h4>
+                    <span class="product-price">{{ product.price }}</span>
                 </a>
             {% endfor %}
         </div>
