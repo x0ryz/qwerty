@@ -5,3 +5,4 @@ celery
 flower
 stripe
 python-decouple
+weasyprint
