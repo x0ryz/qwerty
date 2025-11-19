@@ -1,8 +1,8 @@
 django
 pillow
-python-dotenv
 celery
 flower
 stripe
 python-decouple
 weasyprint
+psycopg2-binary
