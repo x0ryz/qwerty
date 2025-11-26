@@ -1,0 +1,9 @@
+{
+  "name": "QWERTY Django Shop",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "web",
+  "workspaceFolder": "/app",
+
+  "forwardPorts": [8000, 5432],
+  "remoteUser": "root"
+}
