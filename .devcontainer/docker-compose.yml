@@ -1,8 +1,6 @@
   services:
     web:
-      build:
-        context: ..
-        dockerfile: .devcontainer/Dockerfile
+      image: mcr.microsoft.com/devcontainers/python:3.11
       volumes:
         - ../:/app:cached
         - static_volume:/app/staticfiles
@@ -52,6 +50,14 @@
         interval: 5s
         timeout: 15s
         retries: 5
+
+    stripe:
+      image: stripe/stripe-cli:latest
+      command: listen --forward-to http://web:8000/payment/webhook/ --api-key ${STRIPE_SECRET_KEY}
+      environment:
+        - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      depends_on:
+        - web
 
   volumes:
     postgres_data:
