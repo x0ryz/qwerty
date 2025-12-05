@@ -4,7 +4,6 @@ node_modules
 
 .vscode
 .idea
-.devcontainer/.env
 
 **.sqlite3
 media
