@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'payment.apps.PaymentConfig',
     'coupons.apps.CouponsConfig',
     'catalog.apps.MainConfig',
+    'pages.apps.PagesConfig',
 ]
 
 MIDDLEWARE = [

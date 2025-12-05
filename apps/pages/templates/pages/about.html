@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}ABOUT // QWERTY{% endblock %}
+
+{% block content %}
+    <div class="font-mono flex flex-col">
+        <div class="max-w-7xl mx-auto px-4 md:px-8 py-8 w-full">
+            <h1 class="text-3xl font-black uppercase mb-8 border-b-2 border-black pb-2">
+                ABOUT_US
+            </h1>
+
+            <div class="bg-white border-2 border-black shadow-hard p-8 md:p-12 mb-16">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="space-y-8 text-lg leading-relaxed">
+                        <div>
+                            <p class="font-bold mb-4 bg-black text-white inline-block px-2 py-1 text-sm">
+                                01. THE MISSION
+                            </p>
+                            <p class="border-l-4 border-black pl-6 text-gray-800">
+                                We believe that the tools you use define the work you create.
+                                In an era of disposable plastic and planned obsolescence, QWERTY stands for
+                                permanence. We build input devices that outlast the computers they control.
+                            </p>
+                        </div>
+
+                        <div class="h-px bg-black w-full opacity-20"></div>
+
+                        <div>
+                            <p class="font-bold mb-4 bg-black text-white inline-block px-2 py-1 text-sm">
+                                02. THE AESTHETIC
+                            </p>
+                            <p class="text-gray-800">
+                                We reject the "gamer" aesthetic. No RGB rainbows. No aggressive angular plastic.
+                                Our design language is rooted in the brutalist architecture of the 1970s and
+                                the utilitarian industrial design of early computing terminals.
+                                Strict. Functional. Timeless.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-8 text-lg leading-relaxed flex flex-col justify-center">
+                        <div class="border-2 border-black p-6 bg-gray-50 transform rotate-1 hover:rotate-0 transition-transform duration-300">
+                            <p class="font-bold mb-4 uppercase text-sm border-b border-black pb-2">
+                                03. THE BUILD
+                            </p>
+                            <ul class="list-disc list-inside space-y-2 text-gray-800 text-sm font-bold">
+                                <li>Milled 6063 Aluminum Chassis</li>
+                                <li>Heavy gauge steel backplates</li>
+                                <li>Double-shot PBT Keycaps (1.5mm)</li>
+                                <li>Hand-lubed stabilizers</li>
+                                <li>VIA/QMK Programmable PCBs</li>
+                                <li>Sound dampening Poron foam kits</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full bg-black text-white border-y-2 border-white/20 py-24">
+            <div class="max-w-7xl mx-auto px-4 md:px-8 text-center">
+                <h2 class="text-2xl md:text-4xl font-black uppercase mb-6 tracking-widest">
+                    "DESIGN IS INTELLIGENCE MADE VISIBLE."
+                </h2>
+                <div class="w-24 h-1 bg-white mx-auto mb-6"></div>
+                <p class="text-gray-500 max-w-xl mx-auto text-sm">
+                    WE DO NOT COMPROMISE ON MATERIALS. WE DO NOT COMPROMISE ON SOUND. WE DO NOT COMPROMISE ON FEEL.
+                </p>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 md:px-8 py-16 w-full">
+            <div class="p-8 bg-white border-2 border-black text-center relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-full h-1 bg-black transform -translate-x-full group-hover:translate-x-0 transition-transform duration-700"></div>
+                <p class="uppercase font-bold tracking-widest text-sm mb-2">Established {% now "Y" %}</p>
+                <p class="text-xs text-gray-500">DESIGNED IN SEATTLE. MACHINED IN SHENZHEN.</p>
+                <div class="mt-4 pt-4 border-t border-gray-200 text-[10px] font-mono opacity-50">
+                    SERIAL_NO: 8829-11-X // BATCH: 004
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
