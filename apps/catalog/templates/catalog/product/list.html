@@ -1,4 +1,4 @@
-{% extends "catalog/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block title %}
@@ -15,7 +15,7 @@
                 </li>
                 {% for c in categories %}
                     <li {% if category.slug == c.slug %}class="selected"{% endif %}>
-                        <a href="{{ c.get_absolute_url }}">{{ c.name }}</a>
+                        <p>{{ c.name }}</p>
                     </li>
                 {% endfor %}
             </ul>

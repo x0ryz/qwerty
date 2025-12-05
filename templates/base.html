@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}QWERTY STORE{% endblock %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['Courier New', 'Courier', 'monospace'],
+                    },
+                    colors: {
+                        'paper': '#f0f0f0',
+                        'ink': '#1a1a1a',
+                    },
+                    boxShadow: {
+                        'hard': '4px 4px 0px 0px #000000',
+                        'hard-sm': '2px 2px 0px 0px #000000',
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #e5e5e5;
+            color: #000;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #fff;
+            border-left: 2px solid #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body class="font-mono">
+
+{% include "includes/header.html" %}
+
+<main class="flex-grow">
+    {% block content %}
+    {% endblock %}
+</main>
+
+{% include "includes/footer.html" %}
+
+</body>
+</html>

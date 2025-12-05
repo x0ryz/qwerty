@@ -1,0 +1,36 @@
+<header class="sticky top-0 z-50 bg-white border-b-2 border-black">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+
+        <div class="flex items-center gap-8">
+            <a href="#"
+               class="text-2xl font-black tracking-tighter uppercase border-2 border-transparent hover:border-black px-2 flex-shrink-0 transition-all">
+                QWERTY://
+            </a>
+
+            <nav class="hidden md:flex gap-6">
+                <a href="{% url 'catalog:product_list' %}"
+                   class="font-bold hover:underline decoration-2 underline-offset-4">
+                    CATALOG
+                </a>
+                <a href="#" class="font-bold hover:underline decoration-2 underline-offset-4">
+                    ABOUT
+                </a>
+            </nav>
+        </div>
+
+        <nav class="hidden md:flex gap-6 flex-shrink-0 items-center">
+            <a href="#" class="font-bold hover:underline decoration-2 underline-offset-4">
+                FAVORITES
+            </a>
+
+            <a href="{% url 'cart:cart_detail' %}" class="font-bold hover:underline decoration-2 underline-offset-4">
+                CART ({% with total_qty=cart|length %}{{ total_qty|default:"0" }}{% endwith %})
+            </a>
+
+            <a href="#" class="font-bold hover:underline decoration-2 underline-offset-4">
+                ACCOUNT
+            </a>
+        </nav>
+
+    </div>
+</header>
