@@ -2,129 +2,175 @@
 {% load static %}
 
 {% block title %}
-  Your shopping cart
+  SHOPPING_CART
 {% endblock %}
 
 {% block content %}
-  <div class="max-w-7xl mx-auto px-4 py-8">
-      <h1 class="text-3xl font-black uppercase mb-8 border-b-2 border-black pb-2">Your shopping cart</h1>
+  <div class="max-w-7xl mx-auto px-4 py-8 font-mono">
+    <h1 class="text-3xl font-black uppercase mb-8 border-b-2 border-black pb-2">
+      SHOPPING_CART ({{ cart|length }})
+    </h1>
 
-      <table class="w-full text-left border-collapse cart-table">
-        <thead>
-          <tr class="border-b-2 border-black">
-            <th class="py-4 font-black uppercase">Product</th>
-            <th class="py-4 font-black uppercase">Quantity</th>
-            <th class="py-4 font-black uppercase">Remove</th>
-            <th class="py-4 font-black uppercase">Unit price</th>
-            <th class="py-4 font-black uppercase">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-            {% for item in cart %}
-                {% with product=item.product %}
-                    <tr class="border-b border-gray-200" data-id="{{ product.id }}">
-                        <td class="py-4 flex items-center gap-4">
-                            <a href="{{ product.get_absolute_url }}">
-                                <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static "img/no_image.png" %}{% endif %}"
-                                     class="w-16 h-16 object-cover border border-black shadow-hard-sm">
-                            </a>
-                            <a href="{{ product.get_absolute_url }}" class="font-bold hover:underline">
-                                {{ product.name }}
-                            </a>
-                        </td>
-                        <td class="py-4">
-                            <div class="flex items-center">
-                                <button class="w-8 h-8 bg-gray-200 hover:bg-black hover:text-white border border-black font-bold transition-colors js-qty-btn"
-                                        data-action="decrease"
-                                        data-id="{{ product.id }}">-</button>
+    {% if cart|length == 0 %}
+      <div class="text-center py-16 border-2 border-black border-dashed bg-white">
+        <p class="text-xl mb-4">CART IS EMPTY</p>
+        <a href="{% url "catalog:product_list" %}" class="inline-block px-6 py-3 font-mono font-bold text-sm uppercase transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none border-2 border-black focus:outline-none bg-black text-white shadow-hard hover:bg-gray-800">
+          RETURN TO CATALOG
+        </a>
+      </div>
+    {% else %}
+      <div class="flex flex-col lg:flex-row gap-8">
 
-                                <input type="text" value="{{ item.quantity }}" readonly
-                                       class="w-12 h-8 text-center border-y border-black font-mono focus:outline-none bg-white"
-                                       id="qty-{{ product.id }}">
+        <div class="flex-grow space-y-4">
+          {% for item in cart %}
+            {% with product=item.product %}
+              <div class="bg-white border-2 border-black p-4 flex flex-col sm:flex-row gap-4 shadow-hard-sm" data-id="{{ product.id }}">
 
-                                <button class="w-8 h-8 bg-gray-200 hover:bg-black hover:text-white border border-black font-bold transition-colors js-qty-btn"
-                                        data-action="increase"
-                                        data-id="{{ product.id }}">+</button>
-                            </div>
-                        </td>
-                        <td class="py-4">
-                            <form action="{% url "cart:cart_remove" product.id %}" method="post">
-                                <input type="submit" value="Remove" class="text-red-500 font-bold hover:text-black uppercase text-sm cursor-pointer bg-transparent border-none p-0">
-                                {% csrf_token %}
-                            </form>
-                        </td>
-                        <td class="py-4 font-mono">${{ item.price }}</td>
-                        <td class="py-4 font-mono font-bold" id="total-{{ product.id }}">${{ item.total_price }}</td>
-                    </tr>
-                {% endwith %}
-            {% endfor %}
+                <div class="w-full sm:w-32 aspect-square border-2 border-black overflow-hidden flex-shrink-0">
+                  <a href="{{ product.get_absolute_url }}">
+                    <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static "img/no_image.png" %}{% endif %}"
+                         alt="{{ product.name }}"
+                         class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300">
+                  </a>
+                </div>
 
-            {% if cart.coupon %}
-              <tr class="subtotal border-t border-gray-300">
-                <td colspan="4" class="py-2 text-right font-bold pr-4">Subtotal</td>
-                <td class="py-2 font-mono">${{ cart.get_total_price|floatformat:2 }}</td>
-              </tr>
-              <tr>
-                <td colspan="4" class="py-2 text-right text-sm pr-4">
-                  "{{ cart.coupon.code }}" coupon ({{ cart.coupon.discount }}% off)
-                </td>
-                <td class="py-2 font-mono text-green-600 font-bold">
-                  - ${{ cart.get_discount|floatformat:2 }}
-                </td>
-              </tr>
-            {% endif %}
+                <div class="flex-grow flex flex-col justify-between">
+                  <div>
+                    <div class="flex justify-between items-start">
+                      <a href="{{ product.get_absolute_url }}" class="font-bold text-lg hover:underline">
+                        {{ product.name }}
+                      </a>
 
-             <tr class="total border-t-2 border-black">
-              <td colspan="4" class="py-4 text-right font-black uppercase pr-4 text-xl">Total:</td>
-              <td class="py-4 font-mono text-xl font-bold" id="cart-final-total">
-                ${{ cart.get_total_price_after_discount|floatformat:2 }}
-              </td>
-             </tr>
-        </tbody>
-      </table>
+                      <form action="{% url "cart:cart_remove" product.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="text-xs text-red-600 hover:bg-red-600 hover:text-white px-2 py-1 border border-transparent hover:border-black transition-colors uppercase">
+                          [REMOVE]
+                        </button>
+                      </form>
+                    </div>
+
+                    <p class="text-xs text-gray-500 uppercase mt-1">
+                       CATEGORY: {{ product.category|default:"N/A" }}
+                    </p>
+                  </div>
+
+                  <div class="flex justify-between items-end mt-4">
+                    <div class="flex items-center border-2 border-black">
+                      <button class="px-3 py-1 hover:bg-black hover:text-white transition-colors font-bold js-qty-btn"
+                              data-action="decrease"
+                              data-id="{{ product.id }}">-</button>
+
+                      <input type="text"
+                             id="qty-{{ product.id }}"
+                             value="{{ item.quantity }}"
+                             readonly
+                             class="px-0 py-1 font-bold border-x-2 border-black w-[3rem] text-center bg-transparent focus:outline-none cursor-default">
+
+                      <button class="px-3 py-1 hover:bg-black hover:text-white transition-colors font-bold js-qty-btn"
+                              data-action="increase"
+                              data-id="{{ product.id }}">+</button>
+                    </div>
+
+                    <div class="font-bold text-lg" id="total-{{ product.id }}">
+                      ${{ item.total_price }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endwith %}
+          {% endfor %}
+        </div>
+
+        <div class="w-full lg:w-96 flex-shrink-0">
+          <div class="bg-white border-2 border-black p-6 shadow-hard sticky top-24">
+            <h2 class="text-xl font-bold uppercase mb-4 border-b-2 border-black pb-2">ORDER_SUMMARY</h2>
+
+            <div class="mb-6 border-b-2 border-black border-dashed pb-6">
+              <label class="text-xs font-bold mb-2 block uppercase text-gray-500">Add Coupon Code</label>
+              <form action="{% url "coupons:apply" %}" method="post" class="flex gap-2">
+                {% csrf_token %}
+                {{ coupon_apply_form.code }} <button type="submit" class="bg-black text-white border-2 border-black px-4 font-bold text-sm hover:bg-gray-800 transition-colors">
+                  OK
+                </button>
+              </form>
+
+              {% if cart.coupon %}
+                 <div class="text-xs text-green-600 font-bold mt-2 flex items-center">
+                   <span>✓ CODE "{{ cart.coupon.code }}" APPLIED ({{ cart.coupon.discount }}% OFF)</span>
+                 </div>
+              {% endif %}
+            </div>
+
+            <div class="space-y-3 mb-6 text-sm">
+              <div class="flex justify-between">
+                <span>SUBTOTAL</span>
+                <span id="cart-subtotal">${{ cart.get_total_price|floatformat:2 }}</span>
+              </div>
+
+              {% if cart.coupon %}
+                <div class="flex justify-between text-green-600 font-bold">
+                  <span>DISCOUNT</span>
+                  <span>- ${{ cart.get_discount|floatformat:2 }}</span>
+                </div>
+              {% endif %}
+
+              <div class="flex justify-between text-xs text-gray-500">
+                <span>SHIPPING</span>
+                <span>FREE</span>
+              </div>
+
+              <div class="border-t-2 border-dashed border-black pt-3 flex justify-between font-bold text-lg">
+                <span>TOTAL</span>
+                <span id="cart-final-total">${{ cart.get_total_price_after_discount|floatformat:2 }}</span>
+              </div>
+            </div>
+
+            <a href="{% url "orders:order_create" %}" class="block w-full text-center px-6 py-3 font-mono font-bold text-sm uppercase transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none border-2 border-black focus:outline-none bg-black text-white shadow-hard hover:bg-gray-800">
+              CHECKOUT
+            </a>
+
+            <div class="mt-4 text-center">
+              <p class="text-xs text-gray-500">SECURE CHECKOUT // ENCRYPTED</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
 
       {% if recommended_products %}
-      <div class="mt-12">
-        <h3 class="font-bold uppercase mb-4">People who bought this also bought</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="mt-16 border-t-2 border-black pt-8">
+          <h2 class="text-2xl font-black uppercase mb-6">ALSO_POPULAR</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
             {% for p in recommended_products %}
-              <div class="border border-black p-2">
-                <a href="{{ p.get_absolute_url }}">
-                  <img src="{% if p.image %}{{ p.image.url }}{% else %}{% static "img/no_image.png" %}{% endif %}" class="w-full h-32 object-cover mb-2">
-                </a>
-                <p><a href="{{ p.get_absolute_url }}" class="font-bold text-sm hover:underline">{{ p.name }}</a></p>
-              </div>
+              <a href="{{ p.get_absolute_url }}" class="group block h-full">
+                <div class="bg-white border-2 border-black h-full flex flex-col transition-transform hover:-translate-y-1 shadow-hard-sm hover:shadow-hard">
+                  <div class="relative border-b-2 border-black aspect-square overflow-hidden bg-gray-100">
+                    <img src="{% if p.image %}{{ p.image.url }}{% else %}{% static "img/no_image.png" %}{% endif %}"
+                         alt="{{ p.name }}"
+                         class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300">
+                  </div>
+                  <div class="p-3">
+                    <h3 class="font-bold text-sm leading-tight group-hover:underline">{{ p.name }}</h3>
+                    <p class="mt-2 font-bold">${{ p.price }}</p>
+                  </div>
+                </div>
+              </a>
             {% endfor %}
+          </div>
         </div>
-      </div>
-     {% endif %}
+      {% endif %}
 
-    <div class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-         <form action="{% url "coupons:apply" %}" method="post" class="flex gap-2">
-              {{ coupon_apply_form.code }}
-              <input type="submit" value="Apply Coupon" class="px-4 py-2 border-2 border-black bg-gray-200 hover:bg-black hover:text-white cursor-pointer font-bold text-sm">
-              {% csrf_token %}
-         </form>
-
-         <div class="flex gap-4">
-           <a href="{% url "catalog:product_list" %}" class="px-6 py-3 border-2 border-black font-bold hover:bg-black hover:text-white transition-all uppercase text-sm">
-               Continue shopping
-           </a>
-           <a href="{% url "orders:order_create" %}" class="px-6 py-3 bg-black text-white border-2 border-black font-bold shadow-hard hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all uppercase text-sm">
-               Checkout
-           </a>
-         </div>
-    </div>
+    {% endif %}
   </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Отримуємо CSRF токен з будь-якої форми на сторінці
+    // Helper to get CSRF token
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
     document.querySelectorAll('.js-qty-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
-            e.preventDefault(); // Запобігаємо стандартній поведінці
+            e.preventDefault();
 
             const id = this.dataset.id;
             const action = this.dataset.action;
@@ -132,22 +178,19 @@ document.addEventListener('DOMContentLoaded', () => {
             let currentVal = parseInt(input.value);
             let newVal = currentVal;
 
-            // Логіка кнопок
             if (action === 'increase') {
-                if (currentVal < 5) newVal += 1; // Ліміт 5
+                if (currentVal < 10) newVal += 1; // Increased limit slightly
             } else {
-                if (currentVal > 1) newVal -= 1; // Мінімум 1
+                if (currentVal > 1) newVal -= 1;
             }
 
-            // Якщо значення змінилося, відправляємо запит
             if (newVal !== currentVal) {
                 const formData = new FormData();
                 formData.append('product_id', id);
                 formData.append('quantity', newVal);
-                formData.append('override', 'True'); // Важливо: режим перезапису
+                formData.append('override', 'True');
                 formData.append('csrfmiddlewaretoken', csrfToken);
 
-                // URL для view 'cart_add'
                 fetch(`/cart/add/${id}/`, {
                     method: 'POST',
                     headers: {
@@ -158,17 +201,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
-                        // Оновлюємо значення в полі
+                        // Update Input
                         input.value = data.item_qty;
-                        // Оновлюємо суму рядка
+
+                        // Update Item Total
                         const rowTotal = document.getElementById(`total-${id}`);
                         if(rowTotal) rowTotal.innerText = `$${data.item_total_price}`;
-                        // Оновлюємо загальну суму
+
+                        // Update Cart Totals
                         const cartTotal = document.getElementById('cart-final-total');
                         if(cartTotal) cartTotal.innerText = `$${data.cart_total_price}`;
-                        // Оновлюємо хедер
+
+                        const cartSubtotal = document.getElementById('cart-subtotal');
+                        if(cartSubtotal && data.cart_subtotal) cartSubtotal.innerText = `$${data.cart_subtotal}`;
+
+                        // Optional: Update Header Badge
                         const headerCount = document.getElementById('header-cart-count');
-                        if(headerCount) headerCount.innerText = data.unique_count;
+                        if(headerCount) headerCount.innerText = data.unique_count; // or data.total_items
                     }
                 })
                 .catch(err => console.error('Error:', err));
