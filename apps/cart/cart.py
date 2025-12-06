@@ -17,11 +17,12 @@ class Cart:
         product_ids = self.cart.keys()
         products = Product.objects.filter(id__in=product_ids)
         cart = self.cart.copy()
+
         for product in products:
-            cart[str(product.id)]["product"] = product
-        for item in cart.values():
-            item["price"] = Decimal(item["price"])
-            item["total_price"] = item["price"] * item["quantity"]
+            item = cart[str(product.id)]
+            item["product"] = product
+            item["price"] = product.price
+            item["total_price"] = product.price * item["quantity"]
             yield item
 
     def __len__(self):
@@ -30,7 +31,7 @@ class Cart:
     def add(self, product, quantity=1, override_quantity=False):
         product_id = str(product.id)
         if product_id not in self.cart:
-            self.cart[product_id] = {"quantity": 0, "price": str(product.price)}
+            self.cart[product_id] = {"quantity": 0}
 
         if override_quantity:
             self.cart[product_id]["quantity"] = quantity
@@ -50,11 +51,18 @@ class Cart:
             self.save()
 
     def get_total_price(self):
-        return sum(
-            Decimal(item["price"]) * item["quantity"] for item in self.cart.values()
-        )
+        product_ids = self.cart.keys()
+        products = Product.objects.filter(id__in=product_ids)
+        total = Decimal(0)
 
-    def get_unique_count(self):
+        for product in products:
+            qty = self.cart[str(product.id)]["quantity"]
+            total += product.price * qty
+            
+        return total
+
+    @property
+    def unique_count(self):
         return len(self.cart)
 
     def clear(self):

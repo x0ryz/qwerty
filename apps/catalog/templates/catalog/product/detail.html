@@ -11,10 +11,15 @@
         {% static "img/no_image.png" %}{% endif %}" alt={{ product.slug }}>
         <h1>{{ product.name }}</h1>
         <p class="price">${{ product.price }}</p>
-        <form action="{% url "cart:cart_add" product.id %}" method="post">
-            {{ cart_product_form }}
+        <form action="{% url "cart:cart_add" product.id %}" method="post" class="mt-auto js-add-form">
             {% csrf_token %}
-            <input type="submit" value="Add to cart">
+            <input type="hidden" name="quantity" value="1">
+            <input type="hidden" name="override" value="False">
+
+            <button type="submit"
+                    class="w-full py-4 bg-black text-white font-bold text-xl uppercase border-2 border-black hover:bg-white hover:text-black transition-all shadow-hard hover:shadow-none hover:translate-x-1 hover:translate-y-1 js-add-btn">
+                Add to Cart
+            </button>
         </form>
         {{ product.description|linebreaks }}
          {% if recommended_products %}

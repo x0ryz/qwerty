@@ -24,7 +24,7 @@
             </a>
 
             <a href="{% url 'cart:cart_detail' %}" class="font-bold hover:underline decoration-2 underline-offset-4">
-                CART ({% with total_qty=cart|length %}{{ total_qty|default:"0" }}{% endwith %})
+                CART ({{ cart.unique_count }})
             </a>
 
             <a href="#" class="font-bold hover:underline decoration-2 underline-offset-4">

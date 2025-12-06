@@ -6,103 +6,175 @@
 {% endblock %}
 
 {% block content %}
-  <h1>Your shopping cart</h1>
-  <table class="cart">
-    <thead>
-      <tr>
-        <th>Image</th>
-        <th>Product</th>
-        <th>Quantity</th>
-        <th>Remove</th>
-        <th>Unit price</th>
-        <th>Price</th>
-      </tr>
-    </thead>
-    <tbody>
-        {% for item in cart %}
-            {% with product=item.product %}
-                <tr>
-                    <td>
-                        <a
-                            href="{{ product.get_absolute_url }}">
-                                <img
-                                    src="{% if product.image %}{{ product.image.url }}
-                                    {% else %}{% static "img/no_image.png" %}{% endif %}">
-                        </a>
-                    </td>
-                    <td>{{ product.name }}</td>
-                    <td>
-                        <form action="{% url "cart:cart_add" product.id %}" method="post">
-                            {{ item.update_quantity_form.quantity }}
-                            {{ item.update_quantity_form.override }}
-                            <input type="submit" value="Update">
-                            {% csrf_token %}
-                        </form>
-                    </td>
-                    <td>
-                        <form
-                            action="{% url "cart:cart_remove" product.id %}"
-                            method="post">
-                                <input
-                                    type="submit" value="Remove">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+      <h1 class="text-3xl font-black uppercase mb-8 border-b-2 border-black pb-2">Your shopping cart</h1>
+
+      <table class="w-full text-left border-collapse cart-table">
+        <thead>
+          <tr class="border-b-2 border-black">
+            <th class="py-4 font-black uppercase">Product</th>
+            <th class="py-4 font-black uppercase">Quantity</th>
+            <th class="py-4 font-black uppercase">Remove</th>
+            <th class="py-4 font-black uppercase">Unit price</th>
+            <th class="py-4 font-black uppercase">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for item in cart %}
+                {% with product=item.product %}
+                    <tr class="border-b border-gray-200" data-id="{{ product.id }}">
+                        <td class="py-4 flex items-center gap-4">
+                            <a href="{{ product.get_absolute_url }}">
+                                <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static "img/no_image.png" %}{% endif %}"
+                                     class="w-16 h-16 object-cover border border-black shadow-hard-sm">
+                            </a>
+                            <a href="{{ product.get_absolute_url }}" class="font-bold hover:underline">
+                                {{ product.name }}
+                            </a>
+                        </td>
+                        <td class="py-4">
+                            <div class="flex items-center">
+                                <button class="w-8 h-8 bg-gray-200 hover:bg-black hover:text-white border border-black font-bold transition-colors js-qty-btn"
+                                        data-action="decrease"
+                                        data-id="{{ product.id }}">-</button>
+
+                                <input type="text" value="{{ item.quantity }}" readonly
+                                       class="w-12 h-8 text-center border-y border-black font-mono focus:outline-none bg-white"
+                                       id="qty-{{ product.id }}">
+
+                                <button class="w-8 h-8 bg-gray-200 hover:bg-black hover:text-white border border-black font-bold transition-colors js-qty-btn"
+                                        data-action="increase"
+                                        data-id="{{ product.id }}">+</button>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <form action="{% url "cart:cart_remove" product.id %}" method="post">
+                                <input type="submit" value="Remove" class="text-red-500 font-bold hover:text-black uppercase text-sm cursor-pointer bg-transparent border-none p-0">
                                 {% csrf_token %}
-                        </form>
-                    </td>
-                    <td class="num">${{ item.price }}</td>
-                    <td class="num">${{ item.total_price }}</td>
-                </tr>
-            {% endwith %}
-        {% endfor %}
-        {% if cart.coupon %}
-          <tr class="subtotal">
-            <td>Subtotal</td>
-            <td colspan="4"></td>
-            <td class="num">${{ cart.get_total_price|floatformat:2 }}</td>
-          </tr>
-          <tr>
-            <td>
-              "{{ cart.coupon.code }}" coupon
-              ({{ cart.coupon.discount }}% off)
-            </td>
-            <td colspan="4"></td>
-            <td class="num neg">
-              - ${{ cart.get_discount|floatformat:2 }}
-            </td>
-          </tr>
-        {% endif %}
-         <tr class="total">
-          <td>Total</td>
-          <td colspan="4"></td>
-          <td class="num">
-            ${{ cart.get_total_price_after_discount|floatformat:2 }}
-          </td>
-         </tr>
-    </tbody>
-  </table>
-    {% if recommended_products %}
-      <div class="recommendations cart">
-        <h3>People who bought this also bought</h3>
-        {% for p in recommended_products %}
-          <div class="item">
-            <a href="{{ p.get_absolute_url }}">
-              <img src="{% if p.image %}{{ p.image.url }}{% else %}
-              {% static "img/no_image.png" %}{% endif %}">
-            </a>
-            <p><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></p>
-          </div>
-        {% endfor %}
+                            </form>
+                        </td>
+                        <td class="py-4 font-mono">${{ item.price }}</td>
+                        <td class="py-4 font-mono font-bold" id="total-{{ product.id }}">${{ item.total_price }}</td>
+                    </tr>
+                {% endwith %}
+            {% endfor %}
+
+            {% if cart.coupon %}
+              <tr class="subtotal border-t border-gray-300">
+                <td colspan="4" class="py-2 text-right font-bold pr-4">Subtotal</td>
+                <td class="py-2 font-mono">${{ cart.get_total_price|floatformat:2 }}</td>
+              </tr>
+              <tr>
+                <td colspan="4" class="py-2 text-right text-sm pr-4">
+                  "{{ cart.coupon.code }}" coupon ({{ cart.coupon.discount }}% off)
+                </td>
+                <td class="py-2 font-mono text-green-600 font-bold">
+                  - ${{ cart.get_discount|floatformat:2 }}
+                </td>
+              </tr>
+            {% endif %}
+
+             <tr class="total border-t-2 border-black">
+              <td colspan="4" class="py-4 text-right font-black uppercase pr-4 text-xl">Total:</td>
+              <td class="py-4 font-mono text-xl font-bold" id="cart-final-total">
+                ${{ cart.get_total_price_after_discount|floatformat:2 }}
+              </td>
+             </tr>
+        </tbody>
+      </table>
+
+      {% if recommended_products %}
+      <div class="mt-12">
+        <h3 class="font-bold uppercase mb-4">People who bought this also bought</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for p in recommended_products %}
+              <div class="border border-black p-2">
+                <a href="{{ p.get_absolute_url }}">
+                  <img src="{% if p.image %}{{ p.image.url }}{% else %}{% static "img/no_image.png" %}{% endif %}" class="w-full h-32 object-cover mb-2">
+                </a>
+                <p><a href="{{ p.get_absolute_url }}" class="font-bold text-sm hover:underline">{{ p.name }}</a></p>
+              </div>
+            {% endfor %}
+        </div>
       </div>
      {% endif %}
-    <p>Apply a coupon:</p>
-     <form action="{% url "coupons:apply" %}" method="post">
-          {{ coupon_apply_form }}
-          <input type="submit" value="Apply">
-          {% csrf_token %}
-     </form>
-  <p class="text-right">
-       <a href="{% url "catalog:product_list" %}" class="button light">Continue shopping</a>
-       <a href="{% url "orders:order_create" %}" class="button">
-           Checkout
-       </a>
-  </p>
+
+    <div class="mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+         <form action="{% url "coupons:apply" %}" method="post" class="flex gap-2">
+              {{ coupon_apply_form.code }}
+              <input type="submit" value="Apply Coupon" class="px-4 py-2 border-2 border-black bg-gray-200 hover:bg-black hover:text-white cursor-pointer font-bold text-sm">
+              {% csrf_token %}
+         </form>
+
+         <div class="flex gap-4">
+           <a href="{% url "catalog:product_list" %}" class="px-6 py-3 border-2 border-black font-bold hover:bg-black hover:text-white transition-all uppercase text-sm">
+               Continue shopping
+           </a>
+           <a href="{% url "orders:order_create" %}" class="px-6 py-3 bg-black text-white border-2 border-black font-bold shadow-hard hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all uppercase text-sm">
+               Checkout
+           </a>
+         </div>
+    </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Отримуємо CSRF токен з будь-якої форми на сторінці
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    document.querySelectorAll('.js-qty-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault(); // Запобігаємо стандартній поведінці
+
+            const id = this.dataset.id;
+            const action = this.dataset.action;
+            const input = document.getElementById(`qty-${id}`);
+            let currentVal = parseInt(input.value);
+            let newVal = currentVal;
+
+            // Логіка кнопок
+            if (action === 'increase') {
+                if (currentVal < 5) newVal += 1; // Ліміт 5
+            } else {
+                if (currentVal > 1) newVal -= 1; // Мінімум 1
+            }
+
+            // Якщо значення змінилося, відправляємо запит
+            if (newVal !== currentVal) {
+                const formData = new FormData();
+                formData.append('product_id', id);
+                formData.append('quantity', newVal);
+                formData.append('override', 'True'); // Важливо: режим перезапису
+                formData.append('csrfmiddlewaretoken', csrfToken);
+
+                // URL для view 'cart_add'
+                fetch(`/cart/add/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        // Оновлюємо значення в полі
+                        input.value = data.item_qty;
+                        // Оновлюємо суму рядка
+                        const rowTotal = document.getElementById(`total-${id}`);
+                        if(rowTotal) rowTotal.innerText = `$${data.item_total_price}`;
+                        // Оновлюємо загальну суму
+                        const cartTotal = document.getElementById('cart-final-total');
+                        if(cartTotal) cartTotal.innerText = `$${data.cart_total_price}`;
+                        // Оновлюємо хедер
+                        const headerCount = document.getElementById('header-cart-count');
+                        if(headerCount) headerCount.innerText = data.unique_count;
+                    }
+                })
+                .catch(err => console.error('Error:', err));
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
