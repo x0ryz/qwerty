@@ -37,6 +37,8 @@ def cart_add(request, product_id):
             'unique_count': cart.unique_count,
             'cart_total_price': cart.get_total_price_after_discount(),
             'item_total_price': item_total_price,
+            'cart_subtotal': cart.get_total_price(),
+            'cart_discount': cart.get_discount(),
             'item_qty': item_qty,
             'product_id': product_id
         })

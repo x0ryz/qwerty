@@ -110,7 +110,7 @@
               {% if cart.coupon %}
                 <div class="flex justify-between text-green-600 font-bold">
                   <span>DISCOUNT</span>
-                  <span>- ${{ cart.get_discount|floatformat:2 }}</span>
+                  <span id="cart-discount">- ${{ cart.get_discount|floatformat:2 }}</span>
                 </div>
               {% endif %}
 
@@ -204,20 +204,32 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Update Input
                         input.value = data.item_qty;
 
+                        // Helper for price formatting
+                        const fmt = (val) => parseFloat(val).toFixed(2);
+
                         // Update Item Total
                         const rowTotal = document.getElementById(`total-${id}`);
-                        if(rowTotal) rowTotal.innerText = `$${data.item_total_price}`;
+                        if(rowTotal) rowTotal.innerText = `$${fmt(data.item_total_price)}`;
 
-                        // Update Cart Totals
-                        const cartTotal = document.getElementById('cart-final-total');
-                        if(cartTotal) cartTotal.innerText = `$${data.cart_total_price}`;
-
+                        // Update Cart Subtotal
                         const cartSubtotal = document.getElementById('cart-subtotal');
-                        if(cartSubtotal && data.cart_subtotal) cartSubtotal.innerText = `$${data.cart_subtotal}`;
+                        if(cartSubtotal && data.cart_subtotal) {
+                            cartSubtotal.innerText = `$${fmt(data.cart_subtotal)}`;
+                        }
+
+                        // Update Cart Discount
+                        const cartDiscount = document.getElementById('cart-discount');
+                        if(cartDiscount && data.cart_discount) {
+                            cartDiscount.innerText = `- $${fmt(data.cart_discount)}`;
+                        }
+
+                        // Update Cart Final Total
+                        const cartTotal = document.getElementById('cart-final-total');
+                        if(cartTotal) cartTotal.innerText = `$${fmt(data.cart_total_price)}`;
 
                         // Optional: Update Header Badge
                         const headerCount = document.getElementById('header-cart-count');
-                        if(headerCount) headerCount.innerText = data.unique_count; // or data.total_items
+                        if(headerCount) headerCount.innerText = data.unique_count;
                     }
                 })
                 .catch(err => console.error('Error:', err));
