@@ -70,7 +70,7 @@
                     <div class="relative border-b-2 border-black aspect-square overflow-hidden bg-gray-100">
                         {% if product.image %}
                             <img
-                                src="{{ product.image.url }}"
+                                src="{{ product.get_main_image_url }}"
                                 alt="{{ product.name }}"
                                 class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
                             />
@@ -89,7 +89,7 @@
                             [{{ product.category }}]
                         </p>
                         <div class="mt-auto flex justify-between items-center border-t-2 border-dashed border-gray-300 pt-3">
-                            <span class="font-bold text-lg">${{ product.price }}</span>
+                            <span class="font-bold text-lg">${{ product.min_price }}</span>
                             <span class="text-xs font-bold border border-black px-1 hover:bg-black hover:text-white transition-colors">
                                 VIEW ->
                             </span>
