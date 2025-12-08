@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8 space-y-16 font-mono">
+
+    <section>
+        <div class="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 h-auto md:h-[600px]">
+
+            <div class="col-span-1 md:col-span-2 row-span-2 border-2 border-black bg-white shadow-hard relative group overflow-hidden">
+                <a href="{% url 'catalog:product_list' %}?category=keyboard" class="block h-full w-full">
+                    <div class="absolute inset-0 bg-gray-200">
+                        <img src="https://picsum.photos/800/800?random=100" alt="Keyboards" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                    </div>
+                    <div class="absolute bottom-0 left-0 w-full border-t-2 border-black bg-white p-6">
+                        <h2 class="text-4xl font-black uppercase mb-2">KEYBOARDS</h2>
+                        <p class="text-sm mb-4">PRECISION MILLED. GASKET MOUNTED. ENDGAME READY.</p>
+                        <div class="inline-block bg-black text-white px-4 py-2 font-bold text-sm">SHOP NOW -></div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-span-1 md:col-span-2 border-2 border-black bg-white shadow-hard relative group overflow-hidden">
+                <a href="{% url 'catalog:product_list' %}?category=keycaps" class="block h-full w-full">
+                    <div class="absolute inset-0 bg-gray-100 flex items-center justify-center">
+                        <img src="https://picsum.photos/600/300?random=101" alt="Keycaps" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                    </div>
+                    <div class="absolute top-4 left-4 bg-white border-2 border-black px-3 py-1 z-10">
+                        <span class="font-bold uppercase">KEYCAPS // PBT</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-span-1 border-2 border-black bg-white shadow-hard relative group overflow-hidden">
+                <a href="{% url 'catalog:product_list' %}?category=switch" class="block h-full w-full">
+                    <div class="absolute inset-0 bg-white p-4 flex flex-col justify-between hover:bg-black hover:text-white transition-colors">
+                        <div class="text-5xl font-black">MX</div>
+                        <div>
+                            <h3 class="font-bold text-xl uppercase">Switches</h3>
+                            <p class="text-xs mt-1">LINEAR / TACTILE / CLICKY</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-span-1 border-2 border-black bg-white shadow-hard relative group overflow-hidden">
+                <a href="{% url 'catalog:product_list' %}?category=gear" class="block h-full w-full">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="text-6xl mb-2">⚙</div>
+                            <div class="font-bold uppercase border-b-2 border-black inline-block">ACCESSORIES</div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <section>
+        <div class="flex justify-between items-end mb-6 border-b-2 border-black pb-2">
+            <h2 class="text-3xl font-black uppercase">POPULAR_MODELS</h2>
+            <a href="{% url 'catalog:product_list' %}" class="text-sm hover:bg-black hover:text-white px-2 py-1 transition-colors">VIEW ALL [ + ]</a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for product in products %}
+            <a href="{{ product.get_absolute_url }}" class="group block h-full">
+                <div class="bg-white border-2 border-black h-full flex flex-col transition-transform hover:-translate-y-1 shadow-hard-sm hover:shadow-hard">
+                    <div class="relative border-b-2 border-black aspect-square overflow-hidden bg-gray-100">
+                        {% if product.image %}
+                            <img
+                                src="{{ product.image.url }}"
+                                alt="{{ product.name }}"
+                                class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
+                            />
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">NO IMG</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="p-4 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg leading-tight group-hover:underline decoration-2">
+                                {{ product.name }}
+                            </h3>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-4 uppercase tracking-wider">
+                            [{{ product.category }}]
+                        </p>
+                        <div class="mt-auto flex justify-between items-center border-t-2 border-dashed border-gray-300 pt-3">
+                            <span class="font-bold text-lg">${{ product.price }}</span>
+                            <span class="text-xs font-bold border border-black px-1 hover:bg-black hover:text-white transition-colors">
+                                VIEW ->
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+                <div class="col-span-4 py-8 text-center border-2 border-dashed border-black">
+                    NO POPULAR PRODUCTS YET
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}
