@@ -24,12 +24,12 @@
             {% for product in products %}
                 <a class="product-item" href="{{ product.get_absolute_url }}">
                     <div class="product-poster">
-                        {% if product.image %}
-                            <img class="poster-image" src="{{ product.image.url }}" alt="{{ product.slug }}">
+                        {% if product.get_main_image_url %}
+                            <img class="poster-image" src="{{ product.get_main_image_url }}" alt="{{ product.slug }}">
                         {% endif %}
                     </div>
                     <h4 class="product-name">{{ product.name }}</h4>
-                    <span class="product-price">₴{{ product.price }}</span>
+                    <span class="product-price">₴{{ product.min_price }}</span>
                 </a>
             {% endfor %}
         </div>
