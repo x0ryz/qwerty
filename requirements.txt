@@ -1,3 +1,4 @@
+django-filter
 django
 pillow
 celery

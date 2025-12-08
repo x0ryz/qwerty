@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'coupons.apps.CouponsConfig',
     'catalog.apps.MainConfig',
     'pages.apps.PagesConfig',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
