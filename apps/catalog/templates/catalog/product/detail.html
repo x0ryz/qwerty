@@ -54,6 +54,8 @@
                 <form action="{% url 'cart:cart_add' product.id %}" method="post" id="add-to-cart-form">
                     {% csrf_token %}
 
+                    <input type="hidden" name="quantity" value="1">
+
                     <input type="hidden" name="variant_id" id="selected-variant-id" value="">
 
                     <div class="space-y-6 mb-8 bg-white p-6 border-2 border-black shadow-[2px_2px_0_0_#000]">
