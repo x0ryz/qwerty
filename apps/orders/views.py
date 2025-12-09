@@ -21,15 +21,15 @@ def order_create(request):
                 order.coupon = cart.coupon
                 order.discount = cart.coupon.discount
             order.save()
+
             for item in cart:
                 OrderItem.objects.create(
                     order=order,
-                    product=item["product"],
+                    variant=item["variant"],
                     price=item["price"],
                     quantity=item["quantity"],
                 )
 
-            cart.clear()
             order_created.delay(order.id)
             request.session['order_id'] = order.id
             return redirect("payment:process")

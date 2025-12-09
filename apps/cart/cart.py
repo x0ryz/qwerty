@@ -19,7 +19,8 @@ class Cart:
         cart = self.cart.copy()
 
         for variant in variants:
-            item = cart[str(variant.id)]
+            item = cart[str(variant.id)].copy()
+
             item["product"] = variant.product
             item["variant"] = variant
             item["price"] = variant.price

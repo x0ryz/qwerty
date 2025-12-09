@@ -6,7 +6,7 @@ from catalog.models import Product, ProductImage
 
 def index(request):
     products = Product.objects.annotate(
-        orders=Count('order_items'),
+        orders=Count('variants__order_items'),
         min_price=Min('variants__price')
     ).prefetch_related(
         Prefetch('images', queryset=ProductImage.objects.filter(is_main=True), to_attr='main_img_list')

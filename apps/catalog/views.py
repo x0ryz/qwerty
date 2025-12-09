@@ -29,7 +29,7 @@ class ProductListView(ListView):
         main_images = ProductImage.objects.filter(is_main=True)
         qs = qs.annotate(
             min_price=Min('variants__price'),
-            orders_count=Count('order_items')
+            orders_count=Count('variants__order_items')
         ).prefetch_related(
             Prefetch('images', queryset=main_images, to_attr='main_img_list')
         )

@@ -39,7 +39,7 @@ def stripe_webhook(request):
             order.stripe_id = session.payment_intent
             order.save()
 
-            product_ids = order.items.values_list('product_id')
+            product_ids = order.items.values_list('variant__product_id', flat=True)
             products = Product.objects.filter(id__in=product_ids)
             r = Recommender()
             r.products_bought(products)
