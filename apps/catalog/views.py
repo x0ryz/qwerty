@@ -1,93 +1,125 @@
-from django.shortcuts import get_object_or_404, render
+import json
+from django.views.generic import ListView, DetailView
+from django.shortcuts import get_object_or_404
+from django.db.models import Count, Min, Prefetch
+from django.core.paginator import Paginator
 
+from .models import Category, Product, ProductImage, AttributeValue
+from .filters import ProductFilter
+from .recommender import Recommender
 from cart.forms import CartAddProductForm
 
-from .models import Category, Product, ProductImage
-from django.core.paginator import Paginator
-from .filters import ProductFilter
-from django.db.models import Count, Min, Prefetch
-from .recommender import Recommender
 
-import json
+class ProductListView(ListView):
+    model = Product
+    template_name = 'catalog/product/list.html'
+    context_object_name = 'products'
+    paginate_by = 9
 
+    def get_queryset(self):
+        qs = Product.objects.all()
 
-def product_list(request, category_slug=None):
-    category = None
-    categories = Category.objects.all()
+        category_slug = self.request.GET.get('category') or self.kwargs.get('category_slug')
+        self.category = None
 
-    products_qs = Product.objects.all()
+        if category_slug:
+            self.category = get_object_or_404(Category, slug=category_slug)
+            qs = qs.filter(category=self.category)
 
-    if category_slug:
-        category = get_object_or_404(Category, slug=category_slug)
-        products_qs = products_qs.filter(category=category)
+        main_images = ProductImage.objects.filter(is_main=True)
+        qs = qs.annotate(
+            min_price=Min('variants__price'),
+            orders_count=Count('order_items')
+        ).prefetch_related(
+            Prefetch('images', queryset=main_images, to_attr='main_img_list')
+        )
 
-    product_filter = ProductFilter(request.GET, queryset=products_qs)
+        self.filterset = ProductFilter(
+            self.request.GET,
+            queryset=qs,
+            category=self.category
+        )
 
-    filtered_qs = product_filter.qs.distinct()
+        return self.filterset.qs.distinct()
 
-    main_images = ProductImage.objects.filter(is_main=True)
-
-    products = filtered_qs.annotate(
-        min_price=Min('variants__price'),
-        orders=Count('order_items')
-    ).prefetch_related(
-        Prefetch('images', queryset=main_images, to_attr='main_img_list')
-    )
-
-    paginator = Paginator(products, 9)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    return render(request, 'catalog/product/list.html', {
-        'category': category,
-        'categories': categories,
-        'products': page_obj,
-        'filter': product_filter,
-    })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        context['categories'] = Category.objects.all()
+        context['filter'] = self.filterset
+        return context
 
 
-def product_detail(request, slug):
-    product = get_object_or_404(
-        Product.objects.prefetch_related('variants__color', 'variants__switch', 'images__color'),
-        slug=slug
-    )
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = 'catalog/product/detail.html'
+    context_object_name = 'product'
+    slug_url_kwarg = 'slug'
 
-    variants = product.variants.filter(available=True)
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related(
+            'variants__attributes__attribute',
+            'images__attribute_value',
+            'category',
+            'brand',
+            'keyboard_specs',
+            'keycap_specs',
+            'switch_specs'
+        )
 
-    available_colors = sorted(list({v.color for v in variants}), key=lambda c: c.id)
-    available_switches = sorted(list({v.switch for v in variants if v.switch}), key=lambda s: s.id)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        product = self.object
 
-    variants_map = {}
-    for v in variants:
-        switch_id = v.switch.id if v.switch else 'none'
-        key = f"{v.color.id}-{switch_id}"
+        variants = product.variants.filter(available=True)
 
-        variants_map[key] = {
-            'id': v.id,
-            'price': float(v.price),
-            'sku': v.sku,
-            'stock': v.available,
-        }
+        attributes_map = {}
+        for variant in variants:
+            for attr_val in variant.attributes.all():
+                attr_name = attr_val.attribute.name
+                if attr_name not in attributes_map:
+                    attributes_map[attr_name] = set()
+                attributes_map[attr_name].add(attr_val)
 
-    images_by_color = {}
+        grouped_attributes = []
+        for attr_name, values in attributes_map.items():
+            grouped_attributes.append((attr_name, sorted(list(values), key=lambda x: x.id)))
 
-    general_images = product.images.filter(color__isnull=True)
+        variants_js_map = {}
+        for v in variants:
+            attr_ids = sorted([str(av.id) for av in v.attributes.all()])
+            key = "-".join(attr_ids)
 
-    for color in available_colors:
-        color_imgs = list(general_images) + list(product.images.filter(color=color))
-        images_by_color[color.id] = color_imgs
+            variants_js_map[key] = {
+                'id': v.id,
+                'price': float(v.price),
+                'sku': v.sku,
+                'stock': v.available
+            }
 
-    cart_product_form = CartAddProductForm()
-    r = Recommender()
-    recommended_products = r.suggest_products_for([product], 4)
+        images_by_attr = {}
+        general_images = list(product.images.filter(attribute_value__isnull=True))
 
-    return render(
-        request,
-        "catalog/product/detail.html",
-        {"product": product, "cart_product_form": cart_product_form, 'recommended_products': recommended_products,
-         "available_colors": available_colors,
-         "available_switches": available_switches,
-         "variants_json": json.dumps(variants_map),
-         "images_by_color": images_by_color,
-         },
-    )
+        processed_values = set()
+        for img in product.images.filter(attribute_value__isnull=False):
+            val_id = img.attribute_value.id
+            if val_id not in images_by_attr:
+                images_by_attr[val_id] = []
+            images_by_attr[val_id].append(img.image.url)
+            processed_values.add(val_id)
+
+        for val_id in images_by_attr:
+            images_by_attr[val_id].extend([img.image.url for img in general_images])
+
+        r = Recommender()
+        recommended_products = r.suggest_products_for([product], 4)
+
+        context.update({
+            'cart_product_form': CartAddProductForm(),
+            'grouped_attributes': grouped_attributes,
+            'variants_json': json.dumps(variants_js_map),
+            'images_by_attr': images_by_attr,
+            'general_images': [img.image.url for img in general_images],
+            'recommended_products': recommended_products
+        })
+        return context

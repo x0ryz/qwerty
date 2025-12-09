@@ -4,307 +4,319 @@
 {% block title %}{{ product.name }} // QWERTY{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-8 font-mono text-black">
+    <div class="max-w-7xl mx-auto px-4 py-8 font-mono text-black">
 
-    <div class="mb-8 flex justify-between items-center text-sm border-b-2 border-black pb-2">
-        <div class="flex gap-2 uppercase">
-           <a href="/" class="hover:underline">HOME</a> /
-           <a href="{% url 'catalog:product_list' %}" class="hover:underline">CATALOG</a> /
-           <span class="font-bold">{{ product.name }}</span>
+        <div class="mb-8 flex justify-between items-center text-sm border-b-2 border-black pb-2">
+            <div class="flex gap-2 uppercase">
+                <a href="/" class="hover:underline">HOME</a> /
+                {% if product.category %}
+                    <a href="{{ product.category.get_absolute_url }}" class="hover:underline">{{ product.category.name }}</a> /
+                {% endif %}
+                <span class="font-bold">{{ product.name }}</span>
+            </div>
+            <div class="font-bold text-gray-500">ID: {{ product.id }}</div>
         </div>
-        <div class="font-bold text-gray-500">ID: {{ product.id }}</div>
-    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
 
-        <div class="space-y-4">
-            <div class="border-2 border-black shadow-[4px_4px_0px_0px_#000] bg-white aspect-square overflow-hidden relative group">
-                <img
-                  id="main-image"
-                  src="{{ product.get_main_image_url }}"
-                  alt="{{ product.name }}"
-                  class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 cursor-crosshair"
-                />
+            <div class="space-y-4">
+                <div class="border-2 border-black shadow-[4px_4px_0px_0px_#000] bg-white aspect-square overflow-hidden relative group">
+                    <img
+                            id="main-image"
+                            src="{{ product.get_main_image_url }}"
+                            alt="{{ product.name }}"
+                            class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 cursor-crosshair"
+                    />
+                </div>
+
+                <div id="thumbnails-container" class="grid grid-cols-4 gap-4">
+                </div>
             </div>
 
-            <div id="thumbnails-container" class="grid grid-cols-4 gap-4">
-                </div>
-        </div>
-
-        <div class="flex flex-col">
-            <div class="border-b-2 border-black pb-6 mb-6 flex justify-between items-center">
-                <div>
-                   <h1 class="text-4xl font-black uppercase tracking-tight mb-2">{{ product.name }}</h1>
-                   <span id="product-price" class="text-2xl font-bold">
-                       {% if product.variants.first %}
-                           ${{ product.variants.first.price }}
+            <div class="flex flex-col">
+                <div class="border-b-2 border-black pb-6 mb-6 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-4xl font-black uppercase tracking-tight mb-2">{{ product.name }}</h1>
+                        <span id="product-price" class="text-2xl font-bold">
+                       {% if product.variants.exists %}
+                           From ${{ product.variants.first.price }}
                        {% else %}
                            UNAVAILABLE
                        {% endif %}
                    </span>
-                </div>
-                <button class="border-2 border-black w-12 h-12 flex items-center justify-center hover:bg-black hover:text-white transition-colors shadow-[2px_2px_0_0_#000] flex-shrink-0 ml-4">
-                     <span class="text-2xl leading-none">♥</span>
-                </button>
-            </div>
-
-            <div class="mb-8 text-gray-700 leading-relaxed border-l-4 border-gray-300 pl-4">
-                {{ product.description|linebreaks }}
-            </div>
-
-            <form action="{% url 'cart:cart_add' product.id %}" method="post" id="add-to-cart-form">
-                {% csrf_token %}
-
-                <input type="hidden" name="variant_id" id="selected-variant-id" value="">
-
-                <div class="space-y-6 mb-8 bg-white p-6 border-2 border-black shadow-[2px_2px_0_0_#000]">
-
-                    {% if available_colors %}
-                    <div>
-                        <label class="block font-bold mb-3 uppercase text-sm">Select Finish:</label>
-                        <div class="flex flex-wrap gap-2" id="color-options">
-                            {% for color in available_colors %}
-                            <button type="button"
-                                class="variant-btn color-btn px-4 py-2 border-2 text-sm font-bold transition-all border-gray-300 bg-transparent text-gray-500 hover:border-black hover:text-black"
-                                data-type="color"
-                                data-id="{{ color.id }}"
-                                data-hex="{{ color.hex }}">
-                                {{ color.name }}
-                            </button>
-                            {% endfor %}
-                        </div>
                     </div>
-                    {% endif %}
+                </div>
 
-                    {% if available_switches %}
-                    <div>
-                        <label class="block font-bold mb-3 uppercase text-sm">Switch Type:</label>
-                        <div class="flex flex-wrap gap-2" id="switch-options">
-                            {% for switch in available_switches %}
-                            <button type="button"
-                                class="variant-btn switch-btn px-4 py-2 border-2 text-sm font-bold transition-all border-gray-300 bg-transparent text-gray-500 hover:border-black hover:text-black"
-                                data-type="switch"
-                                data-id="{{ switch.id }}">
-                                {{ switch.name }}
-                            </button>
+                <div class="mb-8 text-gray-700 leading-relaxed border-l-4 border-gray-300 pl-4 text-sm">
+                    {{ product.description|linebreaks }}
+                </div>
+
+                <form action="{% url 'cart:cart_add' product.id %}" method="post" id="add-to-cart-form">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="variant_id" id="selected-variant-id" value="">
+
+                    <div class="space-y-6 mb-8 bg-white p-6 border-2 border-black shadow-[2px_2px_0_0_#000]">
+
+                        {% if grouped_attributes %}
+                            {% for attr_name, values in grouped_attributes %}
+                                <div>
+                                    <label class="block font-bold mb-3 uppercase text-sm">{{ attr_name }}:</label>
+                                    <div class="flex flex-wrap gap-2 attribute-group" data-attribute="{{ attr_name }}">
+                                        {% for val in values %}
+                                            <button type="button"
+                                                    class="variant-btn px-4 py-2 border-2 text-sm font-bold transition-all border-gray-300 bg-transparent text-gray-500 hover:border-black hover:text-black"
+                                                    data-id="{{ val.id }}"
+                                                    data-value="{{ val.value }}">
+                                                {{ val.value }}
+                                            </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             {% endfor %}
-                        </div>
+                        {% else %}
+                            <p class="text-sm font-bold text-gray-500">SINGLE ITEM // NO CONFIGURATION NEEDED</p>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                </div>
 
-                <div class="mt-auto space-y-4">
-                    <button type="submit"
-                            id="add-to-cart-btn"
-                            disabled
-                            class="w-full px-6 py-4 font-mono font-bold text-lg uppercase transition-all border-2 border-black bg-black text-white shadow-[4px_4px_0_0_#000] hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
-                        SELECT OPTIONS
-                    </button>
-                    <p class="text-xs text-center text-gray-500">FREE SHIPPING ON ORDERS OVER $200. NO RETURNS ON LUBED SWITCHES.</p>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="mb-16">
-        <h2 class="text-2xl font-black uppercase mb-6 border-b-2 border-black inline-block">TECHNICAL_SPECS</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 border-2 border-black bg-white">
-            <div class="p-4 flex justify-between border-b border-black md:border-r">
-                <span class="font-bold text-gray-600">BRAND</span>
-                <span class="font-bold">{{ product.brand.name }}</span>
-            </div>
-            <div class="p-4 flex justify-between border-b border-black">
-                <span class="font-bold text-gray-600">MODEL</span>
-                <span class="font-bold">{{ product.name }}</span>
-            </div>
-            <div class="p-4 flex justify-between border-b border-black md:border-r md:border-b-0">
-                <span class="font-bold text-gray-600">CATEGORY</span>
-                <span class="font-bold uppercase">{{ product.category.name }}</span>
-            </div>
-            <div class="p-4 flex justify-between">
-                <span class="font-bold text-gray-600">SKU</span>
-                <span class="font-bold" id="specs-sku">---</span>
+                    <div class="mt-auto space-y-4">
+                        <button type="submit"
+                                id="add-to-cart-btn"
+                                disabled
+                                class="w-full px-6 py-4 font-mono font-bold text-lg uppercase transition-all border-2 border-black bg-black text-white shadow-[4px_4px_0_0_#000] hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                            SELECT OPTIONS
+                        </button>
+                        <p class="text-xs text-center text-gray-500">FREE SHIPPING ON ORDERS OVER $200.</p>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
 
-    {% if recommended_products %}
-    <div>
-        <h2 class="text-2xl font-black uppercase mb-6 border-b-2 border-black inline-block">SIMILAR_UNITS</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {% for p in recommended_products %}
-                <a href="{{ p.get_absolute_url }}" class="group block h-full">
-                    <div class="bg-white border-2 border-black h-full flex flex-col transition-transform hover:-translate-y-1 shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000]">
-                        <div class="relative border-b-2 border-black aspect-square overflow-hidden bg-gray-100">
-                            <img src="{{ p.get_main_image_url }}" alt="{{ p.name }}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300">
-                        </div>
-                        <div class="p-4 flex flex-col flex-grow font-mono">
-                            <h3 class="font-bold text-lg leading-tight group-hover:underline decoration-2">{{ p.name }}</h3>
-                            <div class="mt-auto pt-3 flex justify-between items-center border-t-2 border-dashed border-gray-300">
-                                <span class="font-bold text-lg">VIEW -></span>
+        <div class="mb-16">
+            <h2 class="text-2xl font-black uppercase mb-6 border-b-2 border-black inline-block">TECHNICAL_SPECS</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 border-2 border-black bg-white">
+                <div class="p-4 flex justify-between border-b border-black md:border-r">
+                    <span class="font-bold text-gray-600">BRAND</span>
+                    <span class="font-bold">{{ product.brand.name }}</span>
+                </div>
+                <div class="p-4 flex justify-between border-b border-black">
+                    <span class="font-bold text-gray-600">MODEL</span>
+                    <span class="font-bold">{{ product.name }}</span>
+                </div>
+
+                <div class="p-4 flex justify-between border-b border-black md:border-r">
+                    <span class="font-bold text-gray-600">SKU</span>
+                    <span class="font-bold" id="specs-sku">---</span>
+                </div>
+
+                {% if product.keyboard_specs %}
+                    <div class="p-4 flex justify-between border-b border-black">
+                        <span class="font-bold text-gray-600">LAYOUT</span>
+                        <span class="font-bold">{{ product.keyboard_specs.layout }}</span>
+                    </div>
+                    <div class="p-4 flex justify-between md:border-r">
+                        <span class="font-bold text-gray-600">CONNECTION</span>
+                        <span class="font-bold">{{ product.keyboard_specs.connection }}</span>
+                    </div>
+                {% endif %}
+                {% if product.switch_specs %}
+                    <div class="p-4 flex justify-between border-b border-black">
+                        <span class="font-bold text-gray-600">TYPE</span>
+                        <span class="font-bold uppercase">{{ product.switch_specs.type }}</span>
+                    </div>
+                    <div class="p-4 flex justify-between md:border-r">
+                        <span class="font-bold text-gray-600">FORCE</span>
+                        <span class="font-bold">{{ product.switch_specs.actuation_force }}g</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if recommended_products %}
+            <div>
+                <h2 class="text-2xl font-black uppercase mb-6 border-b-2 border-black inline-block">SIMILAR_UNITS</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {% for p in recommended_products %}
+                        <a href="{{ p.get_absolute_url }}" class="group block h-full">
+                            <div class="bg-white border-2 border-black h-full flex flex-col transition-transform hover:-translate-y-1 shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000]">
+                                <div class="relative border-b-2 border-black aspect-square overflow-hidden bg-gray-100">
+                                    {% if p.images.first %}
+                                        <img src="{{ p.images.first.image.url }}" alt="{{ p.name }}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300">
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center bg-gray-200 text-xs font-bold">NO IMG</div>
+                                    {% endif %}
+                                </div>
+                                <div class="p-4 flex flex-col flex-grow font-mono">
+                                    <h3 class="font-bold text-lg leading-tight group-hover:underline decoration-2">{{ p.name }}</h3>
+                                    <div class="mt-auto pt-3 flex justify-between items-center border-t-2 border-dashed border-gray-300">
+                                        <span class="font-bold text-lg">VIEW -></span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </a>
-            {% endfor %}
-        </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
     </div>
-    {% endif %}
 
-</div>
-
-<script id="variants-data" type="application/json">
+    <script id="variants-data" type="application/json">
     {{ variants_json|safe }}
 </script>
 
-<script>
-    // 1. Отримуємо дані
-    const variantsData = JSON.parse(document.getElementById('variants-data').textContent);
+    <script>
+        // 1. ПАРСИНГ ДАНИХ
+        const variantsData = JSON.parse(document.getElementById('variants-data').textContent);
 
-    // images_by_color ми передали з view, але треба їх правильно відрендерити в JS.
-    // Найпростіший спосіб - створити об'єкт тут вручну через Django Template tag
-    const imagesByColor = {
-        {% for color_id, images in images_by_color.items %}
-            "{{ color_id }}": [
-                {% for img in images %}
-                    "{{ img.image.url }}",
-                {% endfor %}
-            ],
-        {% endfor %}
-    };
+        // Fallback data
+        const generalImages = {{ general_images|safe }}; // Звичайні фото (без прив'язки)
 
-    // Стан вибору
-    let state = {
-        color: null,
-        switch: null,
-        currentImageIndex: 0
-    };
+        // Images mapped by Attribute Value ID (напр. ID кольору)
+        // Ми будуємо цей об'єкт вручну, бо у views передали словник
+        const imagesByAttr = {
+            {% for attr_val_id, img_list in images_by_attr.items %}
+                "{{ attr_val_id }}": {{ img_list|safe }},
+            {% endfor %}
+        };
 
-    // Елементи DOM
-    const els = {
-        price: document.getElementById('product-price'),
-        addToCartBtn: document.getElementById('add-to-cart-btn'),
-        variantInput: document.getElementById('selected-variant-id'),
-        mainImage: document.getElementById('main-image'),
-        thumbsContainer: document.getElementById('thumbnails-container'),
-        specsSku: document.getElementById('specs-sku'),
-        colorBtns: document.querySelectorAll('.color-btn'),
-        switchBtns: document.querySelectorAll('.switch-btn'),
-    };
+        // DOM Елементи
+        const els = {
+            price: document.getElementById('product-price'),
+            addToCartBtn: document.getElementById('add-to-cart-btn'),
+            variantInput: document.getElementById('selected-variant-id'),
+            mainImage: document.getElementById('main-image'),
+            thumbsContainer: document.getElementById('thumbnails-container'),
+            specsSku: document.getElementById('specs-sku'),
+            allVariantBtns: document.querySelectorAll('.variant-btn'),
+        };
 
-    // Функція ініціалізації (авто-вибір перших доступних опцій)
-    function init() {
-        if (els.colorBtns.length > 0) els.colorBtns[0].click();
-        if (els.switchBtns.length > 0) els.switchBtns[0].click();
+        // Стан вибору: { "Color": "ID_VALUE", "Switch": "ID_VALUE" }
+        let selectedAttributes = {};
+        const totalAttributeGroups = document.querySelectorAll('.attribute-group').length;
 
-        // Якщо немає опцій (простий товар), активуємо кнопку
-        if (els.colorBtns.length === 0 && els.switchBtns.length === 0) {
-            // Тут треба логіку для товару без варіантів, якщо такі є
-        }
-    }
+        // --- ФУНКЦІЇ ---
 
-    // Оновлення стану кнопок (CSS)
-    function updateButtonVisuals(type, id) {
-        const btns = type === 'color' ? els.colorBtns : els.switchBtns;
-        btns.forEach(btn => {
-            if (btn.dataset.id === id) {
-                // Active styles
-                btn.classList.remove('border-gray-300', 'bg-transparent', 'text-gray-500', 'hover:border-black');
-                btn.classList.add('border-black', 'bg-black', 'text-white', 'shadow-[2px_2px_0_0_#000]');
+        function updateGallery(attributeId) {
+            let imagesToShow = [];
+
+            // 1. Пробуємо знайти картинки для конкретного ID атрибуту (напр. Колір)
+            if (attributeId && imagesByAttr[attributeId]) {
+                imagesToShow = imagesByAttr[attributeId];
             } else {
-                // Inactive styles
-                btn.classList.add('border-gray-300', 'bg-transparent', 'text-gray-500', 'hover:border-black');
-                btn.classList.remove('border-black', 'bg-black', 'text-white', 'shadow-[2px_2px_0_0_#000]');
+                // Якщо немає специфічних, показуємо загальні
+                imagesToShow = generalImages;
             }
-        });
-    }
 
-    // Оновлення галереї фото
-    function updateGallery(colorId) {
-        const images = imagesByColor[colorId] || [];
+            // Якщо зовсім нічого немає, лишаємо як є або заглушку
+            if (imagesToShow.length === 0) return;
 
-        // 1. Оновлюємо головне фото (перше в списку)
-        if (images.length > 0) {
-            els.mainImage.src = images[0];
-            state.currentImageIndex = 0;
+            // Оновлюємо головне фото
+            els.mainImage.src = imagesToShow[0];
+
+            // Генеруємо мініатюри
+            els.thumbsContainer.innerHTML = '';
+            imagesToShow.forEach((imgUrl, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `border-2 aspect-square overflow-hidden bg-white hover:opacity-100 transition-opacity ${idx === 0 ? 'border-black opacity-100 ring-2 ring-black ring-offset-2' : 'border-gray-400 opacity-60'}`;
+
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.className = "w-full h-full object-cover grayscale";
+
+                btn.appendChild(img);
+
+                btn.onclick = () => {
+                    els.mainImage.src = imgUrl;
+                    // Стилі активної мініатюри
+                    Array.from(els.thumbsContainer.children).forEach(c => {
+                        c.classList.remove('border-black', 'opacity-100', 'ring-2', 'ring-black', 'ring-offset-2');
+                        c.classList.add('border-gray-400', 'opacity-60');
+                    });
+                    btn.classList.remove('border-gray-400', 'opacity-60');
+                    btn.classList.add('border-black', 'opacity-100', 'ring-2', 'ring-black', 'ring-offset-2');
+                };
+
+                els.thumbsContainer.appendChild(btn);
+            });
         }
 
-        // 2. Перемальовуємо мініатюри
-        els.thumbsContainer.innerHTML = '';
-        images.forEach((imgUrl, idx) => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = `border-2 aspect-square overflow-hidden bg-white hover:opacity-100 transition-opacity ${idx === 0 ? 'border-black opacity-100 ring-2 ring-black ring-offset-2' : 'border-gray-400 opacity-60'}`;
+        function checkVariant() {
+            // Перевіряємо, чи вибрані ВСІ групи атрибутів
+            if (Object.keys(selectedAttributes).length < totalAttributeGroups) {
+                els.addToCartBtn.disabled = true;
+                els.addToCartBtn.textContent = "SELECT ALL OPTIONS";
+                return;
+            }
 
-            const img = document.createElement('img');
-            img.src = imgUrl;
-            img.className = "w-full h-full object-cover grayscale";
+            // Формуємо ключ: сортуємо ID значень, щоб порядок кліків не грав ролі
+            // Наприклад: ["10", "5"] -> "5-10"
+            const sortedIds = Object.values(selectedAttributes).sort((a, b) => a - b);
+            const key = sortedIds.join('-');
 
-            btn.appendChild(img);
+            const variant = variantsData[key];
 
-            // Клік на мініатюру
-            btn.onclick = () => {
-                els.mainImage.src = imgUrl;
-                // Знімаємо активний клас з усіх мініатюр
-                Array.from(els.thumbsContainer.children).forEach(c => {
-                    c.classList.remove('border-black', 'opacity-100', 'ring-2', 'ring-black', 'ring-offset-2');
-                    c.classList.add('border-gray-400', 'opacity-60');
+            if (variant && variant.stock) {
+                // ВАРІАНТ ЗНАЙДЕНО
+                els.price.innerText = `$${variant.price.toFixed(2)}`;
+                els.specsSku.innerText = variant.sku;
+                els.variantInput.value = variant.id;
+
+                els.addToCartBtn.disabled = false;
+                els.addToCartBtn.textContent = `ADD TO CART // $${variant.price.toFixed(2)}`;
+                els.addToCartBtn.classList.remove('bg-gray-400');
+                els.addToCartBtn.classList.add('bg-black', 'hover:bg-gray-800');
+            } else {
+                // ВАРІАНТ НЕДОСТУПНИЙ
+                els.price.innerText = "UNAVAILABLE";
+                els.specsSku.innerText = "---";
+                els.variantInput.value = "";
+
+                els.addToCartBtn.disabled = true;
+                els.addToCartBtn.textContent = "OUT OF STOCK";
+            }
+        }
+
+        // --- ІНІЦІАЛІЗАЦІЯ ---
+
+        // Клік по кнопках атрибутів
+        els.allVariantBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.id;
+                const groupName = btn.closest('.attribute-group').dataset.attribute;
+
+                // 1. Оновлюємо стан вибору
+                selectedAttributes[groupName] = id;
+
+                // 2. Оновлюємо стилі (Active state)
+                const siblings = btn.parentElement.querySelectorAll('.variant-btn');
+                siblings.forEach(sib => {
+                    sib.classList.remove('border-black', 'bg-black', 'text-white', 'shadow-[2px_2px_0_0_#000]');
+                    sib.classList.add('border-gray-300', 'text-gray-500');
                 });
-                // Додаємо активний клас поточній
-                btn.classList.remove('border-gray-400', 'opacity-60');
-                btn.classList.add('border-black', 'opacity-100', 'ring-2', 'ring-black', 'ring-offset-2');
-            };
+                btn.classList.remove('border-gray-300', 'text-gray-500');
+                btn.classList.add('border-black', 'bg-black', 'text-white', 'shadow-[2px_2px_0_0_#000]');
 
-            els.thumbsContainer.appendChild(btn);
+                // 3. Оновлюємо галерею, якщо цей атрибут має прив'язані фото
+                if (imagesByAttr[id]) {
+                    updateGallery(id);
+                }
+
+                // 4. Шукаємо варіант
+                checkVariant();
+            });
         });
-    }
 
-    // Головна логіка перевірки варіанту
-    function checkVariant() {
-        const switchId = state.switch || 'none';
-        const key = `${state.color}-${switchId}`;
-        const variant = variantsData[key];
+        // Завантажити дефолтну галерею (загальні фото), якщо нічого не вибрано
+        updateGallery(null);
 
-        if (variant && variant.stock) {
-            // Є в наявності
-            els.price.textContent = `$${variant.price.toFixed(2)}`;
-            els.variantInput.value = variant.id;
-            els.addToCartBtn.disabled = false;
-            els.addToCartBtn.textContent = `ADD TO CART // $${variant.price}`;
-            els.specsSku.textContent = variant.sku;
-        } else {
-            // Немає або недоступний
-            els.price.textContent = "UNAVAILABLE";
-            els.variantInput.value = "";
-            els.addToCartBtn.disabled = true;
-            els.addToCartBtn.textContent = "OUT OF STOCK";
-            els.specsSku.textContent = "---";
-        }
-    }
-
-    // Слухачі подій для кольорів
-    els.colorBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            state.color = id;
-            updateButtonVisuals('color', id);
-            updateGallery(id); // Міняємо фото
-            checkVariant();
+        // Авто-клік перших опцій (опціонально, щоб користувач зразу бачив ціну)
+        const groups = document.querySelectorAll('.attribute-group');
+        groups.forEach(group => {
+            const firstBtn = group.querySelector('.variant-btn');
+            if(firstBtn) firstBtn.click();
         });
-    });
 
-    // Слухачі подій для світчів
-    els.switchBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            state.switch = id;
-            updateButtonVisuals('switch', id);
-            checkVariant();
-        });
-    });
-
-    // Старт
-    init();
-
-</script>
+    </script>
 {% endblock %}

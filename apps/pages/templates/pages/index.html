@@ -8,7 +8,7 @@
         <div class="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 h-auto md:h-[600px]">
 
             <div class="col-span-1 md:col-span-2 row-span-2 border-2 border-black bg-white shadow-hard relative group overflow-hidden">
-                <a href="{% url 'catalog:product_list' %}?category=keyboard" class="block h-full w-full">
+                <a href="{% url 'catalog:product_list' %}category/keyboard" class="block h-full w-full">
                     <div class="absolute inset-0 bg-gray-200">
                         <img src="https://picsum.photos/800/800?random=100" alt="Keyboards" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
                     </div>
@@ -21,7 +21,7 @@
             </div>
 
             <div class="col-span-1 md:col-span-2 border-2 border-black bg-white shadow-hard relative group overflow-hidden">
-                <a href="{% url 'catalog:product_list' %}?category=keycaps" class="block h-full w-full">
+                <a href="{% url 'catalog:product_list' %}category/keycaps" class="block h-full w-full">
                     <div class="absolute inset-0 bg-gray-100 flex items-center justify-center">
                         <img src="https://picsum.photos/600/300?random=101" alt="Keycaps" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
                     </div>
@@ -32,7 +32,7 @@
             </div>
 
             <div class="col-span-1 border-2 border-black bg-white shadow-hard relative group overflow-hidden">
-                <a href="{% url 'catalog:product_list' %}?category=switch" class="block h-full w-full">
+                <a href="{% url 'catalog:product_list' %}category/switch" class="block h-full w-full">
                     <div class="absolute inset-0 bg-white p-4 flex flex-col justify-between hover:bg-black hover:text-white transition-colors">
                         <div class="text-5xl font-black">MX</div>
                         <div>
@@ -44,7 +44,7 @@
             </div>
 
             <div class="col-span-1 border-2 border-black bg-white shadow-hard relative group overflow-hidden">
-                <a href="{% url 'catalog:product_list' %}?category=gear" class="block h-full w-full">
+                <a href="{% url 'catalog:product_list' %}category/gear" class="block h-full w-full">
                     <div class="absolute inset-0 flex items-center justify-center">
                         <div class="text-center">
                             <div class="text-6xl mb-2">⚙</div>

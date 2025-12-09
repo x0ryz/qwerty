@@ -4,104 +4,112 @@
 {% block title %}Catalog // QWERTY{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-8 font-mono">
-    <div class="flex flex-col md:flex-row gap-8">
+    <div class="max-w-7xl mx-auto px-4 py-8 font-mono">
+        <div class="flex flex-col md:flex-row gap-8">
 
-        <aside class="w-full md:w-64 flex-shrink-0 space-y-8">
-            <form method="get" id="filter-form">
+            <aside class="w-full md:w-64 flex-shrink-0 space-y-8">
+                <form method="get" id="filter-form">
 
-                <div class="mb-6">
-                    {{ filter.form.query }}
-                </div>
+                    <div class="mb-6">
+                        {{ filter.form.query }}
+                    </div>
 
-                <div class="border-2 border-black p-4 bg-white shadow-[2px_2px_0_0_#000]">
-                    <h3 class="font-bold text-lg mb-4 border-b-2 border-black pb-2 uppercase">Price Range</h3>
-                    <div class="flex gap-2 items-center">
-                        <div class="w-1/2">
-                            <label class="text-xs font-bold">MIN</label>
-                            {{ filter.form.min_price }}
+                    <div class="border-2 border-black p-4 bg-white shadow-[2px_2px_0_0_#000]">
+                        <h3 class="font-bold text-lg mb-4 border-b-2 border-black pb-2 uppercase">Price Range</h3>
+                        <div class="flex gap-2 items-center">
+                            <div class="w-1/2">
+                                <label class="text-xs font-bold">MIN</label>
+                                {{ filter.form.min_price }}
+                            </div>
+                            <span class="font-bold">-</span>
+                            <div class="w-1/2">
+                                <label class="text-xs font-bold">MAX</label>
+                                {{ filter.form.max_price }}
+                            </div>
                         </div>
-                        <span class="font-bold">-</span>
-                        <div class="w-1/2">
-                            <label class="text-xs font-bold">MAX</label>
-                            {{ filter.form.max_price }}
-                        </div>
+                    </div>
+
+                    <div class="border-2 border-black p-4 bg-white shadow-[2px_2px_0_0_#000] mt-6">
+                        <h3 class="font-bold text-lg mb-4 border-b-2 border-black pb-2 uppercase">Brands</h3>
+                        <ul class="space-y-2 text-sm max-h-48 overflow-y-auto custom-scrollbar">
+                            {% for checkbox in filter.form.brand %}
+                                <li>
+                                    <label class="flex items-center space-x-2 cursor-pointer group hover:bg-gray-100 p-1">
+                                        {{ checkbox.tag }}
+                                        <span class="uppercase font-bold group-hover:underline">{{ checkbox.choice_label }}</span>
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    {% for field in filter.form %}
+                        {% if field.name|slice:":5" == 'attr_' %}
+                            <div class="border-2 border-black p-4 bg-white shadow-[2px_2px_0_0_#000] mt-6">
+                                <h3 class="font-bold text-lg mb-4 border-b-2 border-black pb-2 uppercase">{{ field.label }}</h3>
+                                <ul class="space-y-2 text-sm max-h-48 overflow-y-auto custom-scrollbar">
+                                    {% for checkbox in field %}
+                                        <li>
+                                            <label class="flex items-center space-x-2 cursor-pointer group hover:bg-gray-100 p-1">
+                                                {{ checkbox.tag }}
+                                                <span class="uppercase font-bold group-hover:underline">{{ checkbox.choice_label }}</span>
+                                            </label>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <button type="submit" class="w-full mt-6 bg-black text-white border-2 border-black py-3 font-bold uppercase hover:bg-gray-800 shadow-[4px_4px_0_0_#000] transition-all active:translate-y-1 active:shadow-none">
+                        Apply Filters
+                    </button>
+
+                    <a href="{% if category %}{% url 'catalog:product_list_by_category' category.slug %}{% else %}{% url 'catalog:product_list' %}{% endif %}" class="block text-center mt-2 text-xs text-red-600 underline uppercase font-bold">
+                        Clear Filters [X]
+                    </a>
+                </form>
+            </aside>
+
+            <div class="flex-grow">
+                <div class="mb-6 border-b-2 border-black pb-2 flex flex-col sm:flex-row justify-between items-end font-mono gap-4">
+                    <h1 class="text-3xl font-black uppercase">
+                        {% if category %}{{ category.name }}{% else %}ALL ITEMS{% endif %}
+                    </h1>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase">Sort By:</span>
+                        <select name="o" form="filter-form" onchange="document.getElementById('filter-form').submit()" class="bg-white border-2 border-black p-1 font-mono text-sm focus:outline-none cursor-pointer">
+                            {% for choice in filter.form.o.field.choices %}
+                                <option value="{{ choice.0 }}" {% if filter.form.o.value == choice.0 %}selected{% endif %}>
+                                    {{ choice.1 }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
 
-                <div class="border-2 border-black p-4 bg-white shadow-[2px_2px_0_0_#000] mt-6">
-                    <h3 class="font-bold text-lg mb-4 border-b-2 border-black pb-2 uppercase">Brands</h3>
-                    <ul class="space-y-2 text-sm">
-                        {% for checkbox in filter.form.brand %}
-                        <li>
-                            <label class="flex items-center space-x-2 cursor-pointer group hover:bg-gray-100 p-1">
-                                {{ checkbox.tag }}
-                                <span class="uppercase font-bold group-hover:underline">{{ checkbox.choice_label }}</span>
-                            </label>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                {% if products %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for product in products %}
+                            <a href="{{ product.get_absolute_url }}" class="group block h-full">
+                                <div class="bg-white border-2 border-black h-full flex flex-col transition-transform hover:-translate-y-1 shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000]">
+                                    <div class="relative border-b-2 border-black aspect-square overflow-hidden bg-gray-100">
+                                        {% if product.main_img_list %}
+                                            <img src="{{ product.main_img_list.0.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300">
+                                        {% else %}
+                                            <div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 font-bold">NO IMG</div>
+                                        {% endif %}
+                                    </div>
 
-                <div class="border-2 border-black p-4 bg-white shadow-[2px_2px_0_0_#000] mt-6">
-                    <h3 class="font-bold text-lg mb-4 border-b-2 border-black pb-2 uppercase">Switch Type</h3>
-                    <ul class="space-y-2 text-sm">
-                        {% for checkbox in filter.form.switches %}
-                        <li>
-                            <label class="flex items-center space-x-2 cursor-pointer group hover:bg-gray-100 p-1">
-                                {{ checkbox.tag }}
-                                <span class="uppercase font-bold group-hover:underline">{{ checkbox.choice_label }}</span>
-                            </label>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-
-                <button type="submit" class="w-full mt-6 bg-black text-white border-2 border-black py-3 font-bold uppercase hover:bg-gray-800 shadow-[4px_4px_0_0_#000] transition-all active:translate-y-1 active:shadow-none">
-                    Apply Filters
-                </button>
-
-                <a href="{% url 'catalog:product_list' %}" class="block text-center mt-2 text-xs text-red-600 underline uppercase font-bold">
-                    Clear Filters [X]
-                </a>
-            </form>
-        </aside>
-
-        <div class="flex-grow">
-            <div class="mb-6 border-b-2 border-black pb-2 flex flex-col sm:flex-row justify-between items-end font-mono gap-4">
-                <h1 class="text-3xl font-black uppercase">
-                    {% if category %}{{ category.name }}{% else %}ALL ITEMS{% endif %}
-                </h1>
-
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold uppercase">Sort By:</span>
-                    <select name="o" form="filter-form" onchange="document.getElementById('filter-form').submit()" class="bg-white border-2 border-black p-1 font-mono text-sm focus:outline-none cursor-pointer">
-                        {% for choice in filter.form.o.field.choices %}
-                            <option value="{{ choice.0 }}" {% if filter.form.o.value == choice.0 %}selected{% endif %}>
-                                {{ choice.1 }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            {% if products %}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {% for product in products %}
-                <a href="{{ product.get_absolute_url }}" class="group block h-full">
-                    <div class="bg-white border-2 border-black h-full flex flex-col transition-transform hover:-translate-y-1 shadow-[2px_2px_0_0_#000] hover:shadow-[4px_4px_0_0_#000]">
-                        <div class="relative border-b-2 border-black aspect-square overflow-hidden bg-gray-100">
-                            <img src="{{ product.get_main_image_url }}" alt="{{ product.name }}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300">
-                        </div>
-
-                        <div class="p-4 flex flex-col flex-grow font-mono">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg leading-tight group-hover:underline decoration-2">{{ product.name }}</h3>
-                            </div>
-                            <p class="text-xs text-gray-500 mb-4 uppercase tracking-wider">
-                                [{{ product.category.name }}]
-                            </p>
-                            <div class="mt-auto flex justify-between items-center border-t-2 border-dashed border-gray-300 pt-3">
+                                    <div class="p-4 flex flex-col flex-grow font-mono">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <h3 class="font-bold text-lg leading-tight group-hover:underline decoration-2">{{ product.name }}</h3>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mb-4 uppercase tracking-wider">
+                                            [{{ product.category.name }}]
+                                        </p>
+                                        <div class="mt-auto flex justify-between items-center border-t-2 border-dashed border-gray-300 pt-3">
                                 <span class="font-bold text-lg">
                                     {% if product.min_price %}
                                         From ${{ product.min_price }}
@@ -109,39 +117,41 @@
                                         UNAVAILABLE
                                     {% endif %}
                                 </span>
-                                <span class="text-xs font-bold border border-black px-1 hover:bg-black hover:text-white transition-colors">
+                                            <span class="text-xs font-bold border border-black px-1 hover:bg-black hover:text-white transition-colors">
                                     VIEW ->
                                 </span>
-                            </div>
-                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
                     </div>
-                </a>
-                {% endfor %}
-            </div>
 
-            <div class="mt-12 flex justify-center gap-2 font-mono font-bold">
-                {% if products.has_previous %}
-                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ products.previous_page_number }}" class="px-4 py-2 border-2 border-black hover:bg-black hover:text-white">&lt; PREV</a>
-                {% endif %}
+                    {% if is_paginated %}
+                        <div class="mt-12 flex justify-center gap-2 font-mono font-bold">
+                            {% if page_obj.has_previous %}
+                                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" class="px-4 py-2 border-2 border-black hover:bg-black hover:text-white">&lt; PREV</a>
+                            {% endif %}
 
-                <span class="px-4 py-2 border-2 border-black bg-black text-white">
-                    {{ products.number }} / {{ products.paginator.num_pages }}
+                            <span class="px-4 py-2 border-2 border-black bg-black text-white">
+                    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
                 </span>
 
-                {% if products.has_next %}
-                    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ products.next_page_number }}" class="px-4 py-2 border-2 border-black hover:bg-black hover:text-white">NEXT &gt;</a>
+                            {% if page_obj.has_next %}
+                                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" class="px-4 py-2 border-2 border-black hover:bg-black hover:text-white">NEXT &gt;</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                {% else %}
+                    <div class="border-2 border-black border-dashed p-12 text-center font-mono bg-white">
+                        <h3 class="text-xl font-bold mb-2">NO_DATA_FOUND</h3>
+                        <p>Adjust filters to locate inventory.</p>
+                        <a href="{% url 'catalog:product_list' %}" class="inline-block mt-4 px-6 py-2 bg-black text-white font-bold uppercase">Reset All</a>
+                    </div>
                 {% endif %}
             </div>
 
-            {% else %}
-            <div class="border-2 border-black border-dashed p-12 text-center font-mono bg-white">
-                <h3 class="text-xl font-bold mb-2">NO_DATA_FOUND</h3>
-                <p>Adjust filters to locate inventory.</p>
-                <a href="{% url 'catalog:product_list' %}" class="inline-block mt-4 px-6 py-2 bg-black text-white font-bold uppercase">Reset All</a>
-            </div>
-            {% endif %}
         </div>
-
     </div>
-</div>
 {% endblock %}
