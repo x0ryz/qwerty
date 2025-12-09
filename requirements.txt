@@ -8,3 +8,4 @@ python-decouple
 weasyprint
 psycopg2-binary
 redis
+gunicorn

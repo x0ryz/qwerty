@@ -1,0 +1,93 @@
+services:
+  web:
+    build: .
+    container_name: qwerty_web
+    restart: always
+    command: >
+      sh -c "python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+    networks:
+      - default
+
+  worker:
+    build: .
+    container_name: qwerty_worker
+    restart: always
+    command: celery -A config worker -l info
+    volumes:
+      - media_volume:/app/media
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+    networks:
+      - default
+
+  nginx:
+    image: nginx:1.25
+    container_name: qwerty_nginx
+    restart: always
+    volumes:
+      - static_volume:/app/static
+      - media_volume:/app/media
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - web
+    networks:
+      - default
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qwerty.rule=Host(`qwerty.x0ryz.cc`)"
+      - "traefik.http.routers.qwerty.entrypoints=websecure"
+      - "traefik.http.routers.qwerty.tls.certresolver=myresolver"
+      - "traefik.http.services.qwerty.loadbalancer.server.port=80"
+      - "traefik.docker.network=traefik_public"
+
+  db:
+    image: postgres:15
+    container_name: qwerty_db
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - default
+
+  redis:
+    image: redis:7-alpine
+    container_name: qwerty_redis
+    restart: always
+    networks:
+      - default
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: qwerty_rabbitmq
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - default
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+
+networks:
+  traefik_public:
+    external: true
