@@ -52,10 +52,19 @@ class Product(models.Model):
         return reverse("catalog:product_detail", args=[self.slug])
 
     def get_main_image_url(self):
-        img = self.images.filter(is_main=True).first()
-        if not img:
-            img = self.images.first()
-        return img.image.url if img else '/static/img/no-image.png'
+        if hasattr(self, 'main_img_list'):
+            if self.main_img_list:
+                return self.main_img_list[0].image.url
+
+        else:
+            img = self.images.filter(is_main=True).first()
+            if not img:
+                img = self.images.first()
+
+            if img:
+                return img.image.url
+
+        return None
 
     class Meta:
         ordering = ["name"]
@@ -74,6 +83,16 @@ class ProductVariant(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     sku = models.CharField(max_length=255, unique=True)
     available = models.BooleanField(default=True)
+
+    def get_image_url(self):
+        attr_ids = self.attributes.values_list('id', flat=True)
+
+        specific_image = self.product.images.filter(attribute_value__id__in=attr_ids).first()
+
+        if specific_image:
+            return specific_image.image.url
+
+        return self.product.get_main_image_url()
 
     def __str__(self):
         return f"{self.product.name} (SKU: {self.sku})"
