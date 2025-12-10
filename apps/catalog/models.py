@@ -51,12 +51,6 @@ class Product(models.Model):
     def get_absolute_url(self):
         return reverse("catalog:product_detail", args=[self.slug])
 
-    def get_main_image_url(self):
-        img = self.images.filter(is_main=True).first()
-        if not img:
-            img = self.images.first()
-        return img.image.url if img else '/static/img/no-image.png'
-
     class Meta:
         ordering = ["name"]
         indexes = [
