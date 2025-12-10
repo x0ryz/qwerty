@@ -118,8 +118,9 @@
                     {% with product=item.product %}
                     <li class="flex gap-4">
                         <div class="w-16 h-16 border-2 border-black flex-shrink-0">
-                            <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static "img/no_image.png" %}{% endif %}"
-                                 class="w-full h-full object-cover grayscale">
+                            <img src="{{ item.variant.get_image_url }}"
+                                 alt="{{ product.name }}"
+                                 class="w-full h-full object-cover">
                         </div>
                         <div class="flex-grow">
                             <div class="font-bold text-sm leading-tight">{{ product.name }}</div>

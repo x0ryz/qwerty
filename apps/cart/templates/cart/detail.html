@@ -25,15 +25,13 @@
                     {% for item in cart %}
                         {% with product=item.product %}
                             <div class="bg-white border-2 border-black p-4 flex flex-col sm:flex-row gap-4 shadow-hard-sm">
-
                                 <div class="w-full sm:w-32 aspect-square border-2 border-black overflow-hidden flex-shrink-0">
                                     <a href="{{ product.get_absolute_url }}">
-                                        <img src="{% if product.image %}{{ product.image.url }}{% else %}https://placehold.co/400x400?text=No+Image{% endif %}"
+                                        <img src="{{ item.variant.get_image_url }}"
                                              alt="{{ product.name }}"
-                                             class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300">
+                                             class="w-full h-full object-cover">
                                     </a>
                                 </div>
-
                                 <div class="flex-grow flex flex-col justify-between">
                                     <div>
                                         <div class="flex justify-between items-start">
