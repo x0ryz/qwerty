@@ -65,7 +65,7 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="variant_id" value="{{ item.variant.id }}">
 
-                                            {{ item.update_quantity_form.override }}
+                                            <input type="hidden" name="override" value="True">
 
                                             <div class="flex items-center border-2 border-black">
                                                 <input type="number"
