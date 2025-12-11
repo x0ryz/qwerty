@@ -1,0 +1,12 @@
+<div class="border-2 border-black shadow-[4px_4px_0px_0px_#000] bg-white aspect-square overflow-hidden relative group">
+    <img src="{{ current_image }}" alt="{{ product.name }}"
+         class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 cursor-crosshair"/>
+</div>
+
+<div class="grid grid-cols-4 gap-4 mt-4">
+    {% for thumb in thumbnails %}
+        <div class="border-2 aspect-square overflow-hidden bg-white {% if forloop.first %}border-black ring-2 ring-black ring-offset-2{% else %}border-gray-400 opacity-60{% endif %}">
+            <img src="{{ thumb }}" class="w-full h-full object-cover grayscale">
+        </div>
+    {% endfor %}
+</div>

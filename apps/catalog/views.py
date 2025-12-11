@@ -57,22 +57,40 @@ class ProductDetailView(DetailView):
     slug_url_kwarg = 'slug'
 
     def get_queryset(self):
+        # Оптимізація запитів (те саме, що було, це good practice)
         return super().get_queryset().prefetch_related(
             'variants__attributes__attribute',
             'images__attribute_value',
             'category',
             'brand',
-            'keyboard_specs',
-            'keycap_specs',
-            'switch_specs'
+            'keyboard_specs',  # Якщо є
+            'switch_specs'     # Якщо є
         )
+
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            # Якщо це HTMX запит - віддаємо файл з OOB оновленнями
+            return ['catalog/product/partials/htmx_update.html']
+        # Якщо звичайний візит - повну сторінку
+        return ['catalog/product/detail.html']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product = self.object
+        request = self.request
 
-        variants = product.variants.filter(available=True)
+        # 1. Отримуємо поточні вибрані опції з URL (напр. ?Color=10&Switch=5)
+        # Ми фільтруємо тільки ті параметри, які є атрибутами
+        current_selection = {}
+        for key, value in request.GET.items():
+            if value.isdigit(): # Захист, очікуємо ID
+                current_selection[key] = int(value)
 
+        # 2. Отримуємо всі доступні варіанти
+        variants = product.variants.filter(available=True).prefetch_related('attributes__attribute')
+
+        # 3. Збираємо унікальні атрибути, які існують у варіантах
+        # Структура: { "Color": [ValueObj1, ValueObj2], "Switch": [...] }
         attributes_map = {}
         for variant in variants:
             for attr_val in variant.attributes.all():
@@ -81,45 +99,83 @@ class ProductDetailView(DetailView):
                     attributes_map[attr_name] = set()
                 attributes_map[attr_name].add(attr_val)
 
-        grouped_attributes = []
+        # 4. Формуємо список груп для шаблону з готовими HTMX URL
+        attribute_groups = []
         for attr_name, values in attributes_map.items():
-            grouped_attributes.append((attr_name, sorted(list(values), key=lambda x: x.id)))
-
-        variants_js_map = {}
-        for v in variants:
-            attr_ids = sorted([str(av.id) for av in v.attributes.all()])
-            key = "-".join(attr_ids)
-
-            variants_js_map[key] = {
-                'id': v.id,
-                'price': float(v.price),
-                'sku': v.sku,
-                'stock': v.available
+            values_list = sorted(list(values), key=lambda x: x.id)
+            group_data = {
+                'name': attr_name,
+                'values': []
             }
 
-        images_by_attr = {}
-        general_images = list(product.images.filter(attribute_value__isnull=True))
+            for val in values_list:
+                # Генеруємо URL для цієї кнопки.
+                # Беремо поточні параметри, замінюємо поточний атрибут на цей val.id
+                params = request.GET.copy()
+                params[attr_name] = val.id
+                url = f"?{params.urlencode()}"
 
-        processed_values = set()
-        for img in product.images.filter(attribute_value__isnull=False):
-            val_id = img.attribute_value.id
-            if val_id not in images_by_attr:
-                images_by_attr[val_id] = []
-            images_by_attr[val_id].append(img.image.url)
-            processed_values.add(val_id)
+                is_selected = current_selection.get(attr_name) == val.id
 
-        for val_id in images_by_attr:
-            images_by_attr[val_id].extend([img.image.url for img in general_images])
+                group_data['values'].append({
+                    'label': val.value,
+                    'value': val.id,
+                    'is_selected': is_selected,
+                    'update_url': url
+                })
+            attribute_groups.append(group_data)
 
+        # 5. Спроба знайти конкретний варіант
+        # Варіант вважається знайденим, якщо він має ВСІ вибрані атрибути
+        selected_variant = None
+
+        # Перевіряємо, чи кількість вибраних атрибутів збігається з кількістю груп
+        if len(current_selection) == len(attributes_map) and len(attributes_map) > 0:
+            # Фільтруємо варіанти
+            candidates = variants
+            for attr_name, val_id in current_selection.items():
+                candidates = candidates.filter(
+                    attributes__attribute__name=attr_name,
+                    attributes__id=val_id
+                )
+            selected_variant = candidates.first()
+
+        # 6. Логіка Зображень (Server-side)
+        # Базові зображення (без прив'язки)
+        general_images = [img.image.url for img in product.images.filter(attribute_value__isnull=True)]
+
+        # Специфічні зображення
+        specific_images = []
+        # Проходимо по вибраних ID, шукаємо чи є для них картинки
+        for val_id in current_selection.values():
+            imgs = product.images.filter(attribute_value_id=val_id)
+            for img in imgs:
+                specific_images.append(img.image.url)
+
+        # Логіка пріоритету: Специфічні -> Загальні
+        gallery_images = specific_images if specific_images else general_images
+
+        # Якщо геть пусто
+        current_image = gallery_images[0] if gallery_images else None
+        thumbnails = gallery_images # Можна додати слайсинг [0:4], якщо треба
+
+        # 7. Рекомендації
         r = Recommender()
         recommended_products = r.suggest_products_for([product], 4)
 
+        # 8. Фінальний контекст
         context.update({
+            'is_htmx': request.headers.get('HX-Request') == 'true',
             'cart_product_form': CartAddProductForm(),
-            'grouped_attributes': grouped_attributes,
-            'variants_json': json.dumps(variants_js_map),
-            'images_by_attr': images_by_attr,
-            'general_images': [img.image.url for img in general_images],
-            'recommended_products': recommended_products
+
+            'attribute_groups': attribute_groups, # Нова структура для кнопок
+            'selected_variant': selected_variant, # Знайдений варіант (або None)
+
+            'current_image': current_image,
+            'thumbnails': thumbnails,
+            'min_price': min(v.price for v in variants) if variants else 0,
+
+            'recommended_products': recommended_products,
         })
+
         return context
