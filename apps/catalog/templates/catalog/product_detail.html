@@ -2,54 +2,111 @@
 {% load static %}
 
 {% block content %}
-<h1>{{ product.name }}</h1>
-
-<p>Категорія: {{ product.category.name }}</p>
-<p>Бренд: {{ product.brand.name }}</p>
-
-{% if product.description %}
-    <p>{{ product.description }}</p>
-{% endif %}
-
-<hr>
-
-<h3>Оберіть параметри</h3>
-
-<form
-    hx-get="{% url 'catalog:product_variant_htmx' product.slug %}"
-    hx-target="#variant-info"
-    hx-trigger="change"
->
-
-    {% regroup attribute_values by attribute as attrs %}
-
-    {% for group in attrs %}
-        <div class="mb-4">
-            <p><strong>{{ group.grouper.name }}</strong></p>
-
-            {% for attr in group.list %}
-                <label>
-                    <input
-                        type="radio"
-                        name="{{ group.grouper.slug }}"
-                        value="{{ attr.value }}"
-                        {% if attr.id in selected_attr_ids %}checked{% endif %}
-                    >
-                    {{ attr.value }}
-                </label>
-            {% endfor %}
+<div class="max-w-7xl mx-auto px-4 py-8 font-mono text-black">
+    <div class="mb-8 flex justify-between items-center text-sm border-b-2 border-black pb-2">
+        <div class="flex gap-2 uppercase">
+            <a href="{% url 'pages:index' %}" class="hover:underline">HOME</a> /
+            {% if product.category %}
+                <a href="{{ product.category.get_absolute_url }}" class="hover:underline">{{ product.category.name }}</a> /
+            {% endif %}
+            <span class="font-bold">{{ product.name }}</span>
         </div>
-    {% endfor %}
-</form>
+        <div id="header-sku" class="font-bold text-gray-500">
+            SKU: {{ default_variant.sku|default:"---" }}
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+        <div class="space-y-4">
+            <div class="border-2 border-black shadow-[4px_4px_0px_0px_#000] bg-white aspect-square overflow-hidden relative group">
+                <img
+                        id="main-image"
+                        src="{{ product.get_main_image_url }}"
+                        alt="{{ product.name }}"
+                        class="w-full h-full object-cover cursor-crosshair"
+                />
+            </div>
+
+            <div id="thumbnails-container" class="grid grid-cols-4 gap-4"></div>
+        </div>
+
+        <div class="flex flex-col">
+            <div class="border-b-2 border-black pb-6 mb-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-4xl font-black uppercase tracking-tight mb-2">{{ product.name }}</h1>
+                    <span id="product-price" class="text-2xl font-bold">
+                        {% if product.variants.exists %}
+                            ${{ product.variants.first.price }}
+                        {% else %}
+                            UNAVAILABLE
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="mb-8 text-gray-700 leading-relaxed border-l-4 border-gray-300 pl-4 text-sm">
+                {{ product.description|linebreaks }}
+            </div>
+
+            <form
+                hx-get="{% url 'catalog:product_variant_htmx' product.slug %}"
+                hx-target="#variant-info"
+                hx-trigger="change"
+            >
+
+                {% regroup attribute_values by attribute as attrs %}
+                <div class="space-y-6 mb-8 bg-white p-6 border-2 border-black shadow-[2px_2px_0_0_#000]">
+                    {% for group in attrs %}
+                        <div>
+                            <p class="block font-bold mb-3 uppercase text-sm">{{ group.grouper.name }}:</p>
+                            <div class="flex flex-wrap gap-2">
+                                {% for attr in group.list %}
+                                <label class="cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="{{ group.grouper.slug }}"
+                                        value="{{ attr.value }}"
+                                        class="peer sr-only"
+                                        {% if attr.id in selected_attr_ids %}checked{% endif %}
+                                    >
+
+                                    <div class="px-4 py-2 border-2 text-sm font-bold transition-all border-gray-300 bg-transparent text-gray-500
+                                                hover:border-black hover:text-black
+                                                peer-checked:border-black peer-checked:text-black peer-checked:bg-gray-50">
+                                        {{ attr.value }}
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </form>
+
+            <form id="cart" action="{% url 'cart:cart_add' default_variant.id %}" method="post">
+                {% csrf_token %}
+
+                <input type="hidden" name="variant_id" value="{{ default_variant.id }}">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="override" value="False">
+
+                <div class="mt-auto space-y-4">
+                    <button type="submit"
+                        {% if not default_variant.available %}disabled{% endif %}
+                        class="w-full px-6 py-4 font-mono font-bold text-lg uppercase transition-all border-2 border-black bg-black text-white shadow-[4px_4px_0_0_#000] hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        ADD TO CART // ${{ product.variants.first.price }}
+                    </button>
+                    <p class="text-xs text-center text-gray-500">FREE SHIPPING ON ORDERS OVER $200.</p>
+                </div>
+            </form>
 
 
-<hr>
+        </div>
+    </div>
 
-<div id="variant-info">
-    {% include "catalog/_variant_info.html" with variant=default_variant cart_product_form=cart_product_form %}
-</div>
 
-<hr>
+<div id="variant-info"></div>
+
 
 <h3>Характеристики</h3>
 <ul>
@@ -57,5 +114,5 @@
         <li>{{ key }}: {{ value }}</li>
     {% endfor %}
 </ul>
-
+</div>
 {% endblock %}
