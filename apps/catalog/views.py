@@ -1,3 +1,5 @@
+from string import printable
+
 from cart.forms import CartAddProductForm
 from django.core.paginator import Paginator
 from django.db.models import Count, Min, Prefetch
@@ -69,8 +71,17 @@ class ProductDetailView(DetailView):
 
         variants = self.object.variants.prefetch_related("attributes__attribute").all()
 
-        context["variants"] = variants
-        context["default_variant"] = variants.first()
+        default_variant = variants.first()
+        context["default_variant"] = default_variant
+
+        # Create a set of Attribute IDs belonging to the default variant.
+        # We pass this to the template to mark the correct radio buttons as 'checked'.
+        if default_variant:
+            selected_ids = set(default_variant.attributes.values_list("id", flat=True))
+        else:
+            selected_ids = set()
+
+        context["selected_attr_ids"] = selected_ids
 
         context["cart_product_form"] = CartAddProductForm()
 
@@ -88,6 +99,7 @@ class ProductDetailView(DetailView):
                     seen.add(key)
                     unique_attrs.append(attr)
 
+        unique_attrs.sort(key=lambda x: (x.attribute.id, x.id))
         context["attribute_values"] = unique_attrs
 
         return context

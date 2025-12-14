@@ -109,6 +109,15 @@ class ProductVariant(models.Model):
 
         return self.product.get_main_image_url()
 
+    def get_images(self):
+        attr_ids = self.attributes.values_list("id", flat=True)
+        images = self.product.images.filter(attribute_value__id__in=attr_ids)
+
+        if images.exists():
+            return images
+
+        return self.product.images.all()
+
     def __str__(self):
         return f"{self.product.name} (SKU: {self.sku})"
 
@@ -129,3 +138,6 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Img for {self.product.name}"
+
+    class Meta:
+        ordering = ["-is_main", "id"]

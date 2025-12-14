@@ -33,7 +33,7 @@
                         type="radio"
                         name="{{ group.grouper.slug }}"
                         value="{{ attr.value }}"
-                        {% if forloop.first %}checked{% endif %}
+                        {% if attr.id in selected_attr_ids %}checked{% endif %}
                     >
                     {{ attr.value }}
                 </label>
@@ -46,7 +46,7 @@
 <hr>
 
 <div id="variant-info">
-    {% include "catalog/_variant_info.html" with variant=variants.first cart_product_form=cart_product_form %}
+    {% include "catalog/_variant_info.html" with variant=default_variant cart_product_form=cart_product_form %}
 </div>
 
 <hr>

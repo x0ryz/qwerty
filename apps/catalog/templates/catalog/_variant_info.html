@@ -1,5 +1,11 @@
 {% if variant %}
     <div>
+        {% with images=variant.get_images %}
+          {% for img in images %}
+            <img src="{{ img.image.url }}" alt="{{ variant.sku }}">
+          {% endfor %}
+        {% endwith %}
+
         <h2>{{ variant.price }} грн</h2>
         <p>SKU: {{ variant.sku }}</p>
 
@@ -16,7 +22,9 @@
 
             <input type="hidden" name="variant_id" value="{{ variant.id }}">
 
-            {{ cart_product_form }}
+            <input type="hidden" name="quantity" value="1">
+
+            <input type="hidden" name="override" value="False">
 
             <button type="submit"
                     {% if not variant.available %}disabled{% endif %}>
