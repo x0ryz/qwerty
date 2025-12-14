@@ -1,19 +1,17 @@
+from catalog.models import Product, ProductVariant
+from catalog.recommender import Recommender
+from coupons.forms import CouponApplyForm
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from catalog.models import Product, ProductVariant
-
 from .cart import Cart
 from .forms import CartAddProductForm
-from catalog.recommender import Recommender
-from coupons.forms import CouponApplyForm
 
 
 @require_POST
-def cart_add(request, product_id):
+def cart_add(request, variant_id):
     cart = Cart(request)
-    variant_id = request.POST.get('variant_id')
     variant = get_object_or_404(ProductVariant, id=variant_id)
 
     form = CartAddProductForm(request.POST)
@@ -21,12 +19,11 @@ def cart_add(request, product_id):
     if form.is_valid():
         cd = form.cleaned_data
         cart.add(
-            variant=variant,
-            quantity=cd["quantity"],
-            override_quantity=cd["override"]
+            variant=variant, quantity=cd["quantity"], override_quantity=cd["override"]
         )
 
     return redirect("cart:cart_detail")
+
 
 @require_POST
 def cart_remove(request, product_id):
@@ -40,19 +37,26 @@ def cart_detail(request):
     cart = Cart(request)
 
     for item in cart:
-        item['update_quantity_form'] = CartAddProductForm(initial={
-            'quantity': item['quantity'],
-            'override': True
-        })
+        item["update_quantity_form"] = CartAddProductForm(
+            initial={"quantity": item["quantity"], "override": True}
+        )
 
     coupon_apply_form = CouponApplyForm(request.POST)
     r = Recommender()
 
-    cart_products = [item['product'] for item in cart]
+    cart_products = [item["product"] for item in cart]
 
     if cart_products:
         recommended_products = r.suggest_products_for(cart_products, max_results=4)
     else:
         recommended_products = []
 
-    return render(request, "cart/detail.html", {"cart": cart, 'coupon_apply_form': coupon_apply_form, 'recommended_products': recommended_products})
+    return render(
+        request,
+        "cart/detail.html",
+        {
+            "cart": cart,
+            "coupon_apply_form": coupon_apply_form,
+            "recommended_products": recommended_products,
+        },
+    )

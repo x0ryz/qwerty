@@ -1,16 +1,31 @@
-{# catalog/product/_variant_info.html #}
-
 {% if variant %}
-    <p><strong>SKU:</strong> {{ variant.sku }}</p>
-    <p><strong>Ціна:</strong> {{ variant.price }} ₴</p>
+    <div>
+        <h2>{{ variant.price }} грн</h2>
+        <p>SKU: {{ variant.sku }}</p>
 
-    <p>
-        {% if variant.available %}
-            <span class="text-green-600">В наявності</span>
-        {% else %}
-            <span class="text-red-600">Нема в наявності</span>
-        {% endif %}
-    </p>
+        <p>
+            {% if variant.available %}
+                <span">В наявності</span>
+            {% else %}
+                <span>Немає в наявності</span>
+            {% endif %}
+        </p>
+
+        <form action="{% url 'cart:cart_add' variant.id %}" method="post">
+            {% csrf_token %}
+
+            <input type="hidden" name="variant_id" value="{{ variant.id }}">
+
+            {{ cart_product_form }}
+
+            <button type="submit"
+                    {% if not variant.available %}disabled{% endif %}>
+                Додати в кошик
+            </button>
+        </form>
+    </div>
 {% else %}
-    <p class="text-red-500">Варіант не знайдено</p>
+    <div>
+        Такої комбінації характеристик немає. Оберіть інші параметри.
+    </div>
 {% endif %}

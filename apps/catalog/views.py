@@ -72,6 +72,8 @@ class ProductDetailView(DetailView):
         context["variants"] = variants
         context["default_variant"] = variants.first()
 
+        context["cart_product_form"] = CartAddProductForm()
+
         # Logic to extract unique attribute options for UI selectors (buttons).
         # We iterate through all variants and collect unique (attribute_id, value) pairs
         # to ensure we don't display duplicate buttons (e.g., multiple "Red" or "Ionic White").
@@ -112,5 +114,5 @@ class ProductVariantHTMXView(View):
         return render(
             request,
             "catalog/_variant_info.html",
-            {"variant": variant},
+            {"variant": variant, "cart_product_form": CartAddProductForm()},
         )
