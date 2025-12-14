@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h1>{{ product.name }}</h1>
+
+<p>Категорія: {{ product.category.name }}</p>
+<p>Бренд: {{ product.brand.name }}</p>
+
+{% if product.description %}
+    <p>{{ product.description }}</p>
+{% endif %}
+
+<hr>
+
+<h3>Оберіть параметри</h3>
+
+<form
+    hx-get="{% url 'catalog:product_variant_htmx' product.slug %}"
+    hx-target="#variant-info"
+    hx-trigger="change"
+>
+
+    {% regroup attribute_values by attribute as attrs %}
+
+    {% for group in attrs %}
+        <div class="mb-4">
+            <p><strong>{{ group.grouper.name }}</strong></p>
+
+            {% for attr in group.list %}
+                <label>
+                    <input
+                        type="radio"
+                        name="{{ group.grouper.slug }}"
+                        value="{{ attr.value }}"
+                    >
+                    {{ attr.value }}
+                </label>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</form>
+
+
+<hr>
+
+<div id="variant-info">
+    {% include "catalog/_variant_info.html" with variant=variants.first %}
+</div>
+
+<hr>
+
+<h3>Характеристики</h3>
+<ul>
+    {% for key, value in product.specs.items %}
+        <li>{{ key }}: {{ value }}</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{# catalog/product/_variant_info.html #}
+
+{% if variant %}
+    <p><strong>SKU:</strong> {{ variant.sku }}</p>
+    <p><strong>Ціна:</strong> {{ variant.price }} ₴</p>
+
+    <p>
+        {% if variant.available %}
+            <span class="text-green-600">В наявності</span>
+        {% else %}
+            <span class="text-red-600">Нема в наявності</span>
+        {% endif %}
+    </p>
+{% else %}
+    <p class="text-red-500">Варіант не знайдено</p>
+{% endif %}
