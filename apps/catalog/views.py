@@ -1,25 +1,28 @@
-import json
-from django.views.generic import ListView, DetailView
-from django.shortcuts import get_object_or_404
-from django.db.models import Count, Min, Prefetch
-from django.core.paginator import Paginator
+from string import printable
 
-from .models import Category, Product, ProductImage, AttributeValue
-from .filters import ProductFilter
-from .recommender import Recommender
 from cart.forms import CartAddProductForm
+from django.core.paginator import Paginator
+from django.db.models import Count, Min, Prefetch
+from django.shortcuts import get_object_or_404, render
+from django.views.generic import DetailView, ListView, View
+
+from .filters import ProductFilter
+from .models import AttributeValue, Category, Product, ProductImage
+from .recommender import Recommender
 
 
 class ProductListView(ListView):
     model = Product
-    template_name = 'catalog/product/list.html'
-    context_object_name = 'products'
+    template_name = "catalog/product_list.html"
+    context_object_name = "products"
     paginate_by = 9
 
     def get_queryset(self):
         qs = Product.objects.all()
 
-        category_slug = self.request.GET.get('category') or self.kwargs.get('category_slug')
+        category_slug = self.request.GET.get("category") or self.kwargs.get(
+            "category_slug"
+        )
         self.category = None
 
         if category_slug:
@@ -28,98 +31,100 @@ class ProductListView(ListView):
 
         main_images = ProductImage.objects.filter(is_main=True)
         qs = qs.annotate(
-            min_price=Min('variants__price'),
-            orders_count=Count('variants__order_items')
+            min_price=Min("variants__price"),
+            orders_count=Count("variants__order_items"),
         ).prefetch_related(
-            Prefetch('images', queryset=main_images, to_attr='main_img_list')
+            Prefetch("images", queryset=main_images, to_attr="main_img_list")
         )
 
         self.filterset = ProductFilter(
-            self.request.GET,
-            queryset=qs,
-            category=self.category
+            self.request.GET, queryset=qs, category=self.category
         )
 
         return self.filterset.qs.distinct()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['category'] = self.category
-        context['categories'] = Category.objects.all()
-        context['filter'] = self.filterset
+        context["category"] = self.category
+        context["categories"] = Category.objects.all()
+        context["filter"] = self.filterset
         return context
 
 
 class ProductDetailView(DetailView):
     model = Product
-    template_name = 'catalog/product/detail.html'
-    context_object_name = 'product'
-    slug_url_kwarg = 'slug'
+    template_name = "catalog/product_detail.html"
+    context_object_name = "product"
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related(
-            'variants__attributes__attribute',
-            'images__attribute_value',
-            'category',
-            'brand',
-            'keyboard_specs',
-            'keycap_specs',
-            'switch_specs'
+        return (
+            super()
+            .get_queryset()
+            .select_related("category", "brand")
+            .prefetch_related("images", "variants__attributes__attribute")
         )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        product = self.object
 
-        variants = product.variants.filter(available=True)
+        variants = self.object.variants.prefetch_related("attributes__attribute").all()
 
-        attributes_map = {}
+        default_variant = variants.first()
+        context["default_variant"] = default_variant
+
+        # Create a set of Attribute IDs belonging to the default variant.
+        # We pass this to the template to mark the correct radio buttons as 'checked'.
+        if default_variant:
+            selected_ids = set(default_variant.attributes.values_list("id", flat=True))
+        else:
+            selected_ids = set()
+
+        context["selected_attr_ids"] = selected_ids
+
+        context["cart_product_form"] = CartAddProductForm()
+
+        # Logic to extract unique attribute options for UI selectors (buttons).
+        # We iterate through all variants and collect unique (attribute_id, value) pairs
+        # to ensure we don't display duplicate buttons (e.g., multiple "Red" or "Ionic White").
+        seen = set()
+        unique_attrs = []
+
         for variant in variants:
-            for attr_val in variant.attributes.all():
-                attr_name = attr_val.attribute.name
-                if attr_name not in attributes_map:
-                    attributes_map[attr_name] = set()
-                attributes_map[attr_name].add(attr_val)
+            for attr in variant.attributes.all():
+                # Use a composite key to identify uniqueness
+                key = (attr.attribute_id, attr.value)
+                if key not in seen:
+                    seen.add(key)
+                    unique_attrs.append(attr)
 
-        grouped_attributes = []
-        for attr_name, values in attributes_map.items():
-            grouped_attributes.append((attr_name, sorted(list(values), key=lambda x: x.id)))
+        unique_attrs.sort(key=lambda x: (x.attribute.id, x.id))
+        context["attribute_values"] = unique_attrs
 
-        variants_js_map = {}
-        for v in variants:
-            attr_ids = sorted([str(av.id) for av in v.attributes.all()])
-            key = "-".join(attr_ids)
-
-            variants_js_map[key] = {
-                'id': v.id,
-                'price': float(v.price),
-                'sku': v.sku,
-                'stock': v.available
-            }
-
-        images_by_attr = {}
-        general_images = list(product.images.filter(attribute_value__isnull=True))
-
-        processed_values = set()
-        for img in product.images.filter(attribute_value__isnull=False):
-            val_id = img.attribute_value.id
-            if val_id not in images_by_attr:
-                images_by_attr[val_id] = []
-            images_by_attr[val_id].append(img.image.url)
-            processed_values.add(val_id)
-
-        for val_id in images_by_attr:
-            images_by_attr[val_id].extend([img.image.url for img in general_images])
-
-        r = Recommender()
-        recommended_products = r.suggest_products_for([product], 4)
-
-        context.update({
-            'cart_product_form': CartAddProductForm(),
-            'grouped_attributes': grouped_attributes,
-            'variants_json': json.dumps(variants_js_map),
-            'images_by_attr': images_by_attr,
-            'general_images': [img.image.url for img in general_images],
-            'recommended_products': recommended_products
-        })
         return context
+
+
+class ProductVariantHTMXView(View):
+    def get(self, request, slug):
+        product = get_object_or_404(Product, slug=slug)
+
+        filters = request.GET.dict()
+
+        variants = product.variants.all()
+
+        # Iteratively filter variants based on ALL selected attributes (AND logic).
+        # Assumes that request.GET contains pairs like ?color=Ionic%20White&profile-switch=Brown.
+        for attr, value in filters.items():
+            variants = variants.filter(
+                attributes__attribute__slug=attr,
+                attributes__value=value,
+            )
+
+        variant = variants.first()
+
+        return render(
+            request,
+            "catalog/_variant_info.html",
+            {"variant": variant, "cart_product_form": CartAddProductForm()},
+        )

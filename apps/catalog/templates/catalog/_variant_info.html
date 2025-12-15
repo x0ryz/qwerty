@@ -1,0 +1,55 @@
+{% if variant %}
+
+    <div id="header-sku" hx-swap-oob="outerHTML">
+        SKU: {{ variant.sku }}
+    </div>
+
+    <img id="main-image" hx-swap-oob="outerHTML" src="{{ variant.get_image_url }}" alt="{{ variant.sku }}"/>
+    <div id="thumbnails-container" hx-swap-oob="outerHTML" class="grid grid-cols-4 gap-4">
+        {% for img in variant.get_images %}
+                <button type="button"
+                        onclick="document.getElementById('main-image').src='{{ img.image.url }}'"
+                        class="border-2 aspect-square overflow-hidden bg-white hover:opacity-100 transition-opacity border-gray-400 opacity-60">
+                    <img src="{{ img.image.url }}"
+                        alt="{{ variant.sku }} - view {{ forloop.counter }}"
+                        class="w-full h-full"
+                </button>
+            {% empty %}
+        {% endfor %}
+    </div>
+
+    <span id="product-price" hx-swap-oob="outerHTML" class="text-2xl font-bold">${{ variant.price }}</span>
+
+    <form id="cart" hx-swap-oob="outerHTML" action="{% url 'cart:cart_add' variant.id %}" method="post">
+
+        {% csrf_token %}
+
+        <input type="hidden" name="variant_id" value="{{ variant.id }}">
+
+        <input type="hidden" name="quantity" value="1">
+
+        <input type="hidden" name="override" value="False">
+
+        <div class="mt-auto space-y-4">
+            <button type="submit" {% if not variant.available %}disabled{% endif %} class="w-full px-6 py-4 font-mono font-bold text-lg uppercase transition-all border-2 border-black bg-black text-white shadow-[4px_4px_0_0_#000] hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                ADD TO CART // ${{ variant.price }}
+            </button>
+            <p class="text-xs text-center text-gray-500">FREE SHIPPING ON ORDERS OVER $200.</p>
+        </div>
+
+    </form>
+
+
+{% else %}
+
+    <form id="cart" hx-swap-oob="outerHTML">
+
+        <button type="button" disabled>
+
+            Товар відсутній
+
+        </button>
+
+    </form>
+
+{% endif %}
