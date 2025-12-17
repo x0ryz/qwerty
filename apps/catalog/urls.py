@@ -12,6 +12,11 @@ urlpatterns = [
         name="product_list_by_category",
     ),
     path(
+        "category/<slug:category_slug>/<slug:attr_slug>/<slug:value_slug>/",
+        views.ProductListView.as_view(),
+        name="product_list_by_attribute",
+    ),
+    path(
         "product/<slug:slug>/", views.ProductDetailView.as_view(), name="product_detail"
     ),
     path(

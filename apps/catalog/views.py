@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import DetailView, ListView, View
 
 from .filters import ProductFilter
-from .models import AttributeValue, Category, Product, ProductImage
+from .models import Attribute, AttributeValue, Category, Product, ProductImage
 from .recommender import Recommender
 
 
@@ -29,6 +29,25 @@ class ProductListView(ListView):
             self.category = get_object_or_404(Category, slug=category_slug)
             qs = qs.filter(category=self.category)
 
+        self.target_attribute = None
+        self.target_value = None
+
+        attr_slug = self.kwargs.get("attr_slug")
+        value_slug = self.kwargs.get("value_slug")
+
+        if attr_slug and value_slug:
+            self.target_attribute = get_object_or_404(Attribute, slug=attr_slug)
+            self.target_value = get_object_or_404(
+                AttributeValue, slug=value_slug, attribute=self.target_attribute
+            )
+
+            # Фільтруємо QuerySet
+            qs = qs.filter(
+                attributes__attribute=self.target_attribute,
+                attributes=self.target_value,
+            )
+
+        # 3. Анотації та префетч (без змін)
         images_qs = ProductImage.objects.order_by("sort_order")
 
         qs = qs.annotate(
@@ -38,6 +57,7 @@ class ProductListView(ListView):
             Prefetch("images", queryset=images_qs, to_attr="main_img_list")
         )
 
+        # 4. Django Filter (без змін - він працюватиме поверх відфільтрованого списку)
         self.filterset = ProductFilter(
             self.request.GET, queryset=qs, category=self.category
         )
@@ -46,9 +66,15 @@ class ProductListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         context["category"] = self.category
         context["categories"] = Category.objects.all()
         context["filter"] = self.filterset
+
+        # Додаємо атрибути в контекст, щоб вивести в шаблоні (наприклад: "Layout: 75%")
+        context["current_attribute"] = self.target_attribute
+        context["current_value"] = self.target_value
+
         return context
 
 
