@@ -29,12 +29,13 @@ class ProductListView(ListView):
             self.category = get_object_or_404(Category, slug=category_slug)
             qs = qs.filter(category=self.category)
 
-        main_images = ProductImage.objects.filter(is_main=True)
+        images_qs = ProductImage.objects.order_by("sort_order")
+
         qs = qs.annotate(
             min_price=Min("variants__price"),
             orders_count=Count("variants__order_items"),
         ).prefetch_related(
-            Prefetch("images", queryset=main_images, to_attr="main_img_list")
+            Prefetch("images", queryset=images_qs, to_attr="main_img_list")
         )
 
         self.filterset = ProductFilter(
