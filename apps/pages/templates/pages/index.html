@@ -57,6 +57,42 @@
 
         <section>
             <div class="flex justify-between items-end mb-6 border-b-2 border-black pb-2">
+                <h2 class="text-3xl font-black uppercase">NEW_ARRIVAL</h2>
+                <a href="{% url 'catalog:product_list' %}" class="text-sm hover:bg-black hover:text-white px-2 py-1 transition-colors">VIEW ALL [ + ]</a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for product in new_arrivals %}
+                    <a href="{{ product.get_absolute_url }}" class="group block h-full">
+                        <div class="bg-white border-2 border-black h-full flex flex-col transition-transform hover:-translate-y-1 shadow-hard-sm hover:shadow-hard">
+                            <div class="relative border-b-2 border-black aspect-square overflow-hidden bg-gray-100">
+                                <img src="{{ product.get_main_image_url }}" alt="{{ product.name }}">
+                            </div>
+
+                            <div class="p-4 flex flex-col flex-grow">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-bold text-lg leading-tight group-hover:underline decoration-2">{{ product.name }}</h3>
+                                </div>
+                                <p class="text-xs text-gray-500 mb-4 uppercase tracking-wider">
+                                    [{{ product.category.name|default:"GENERAL" }}]
+                                </p>
+                                <div class="mt-auto flex justify-between items-center border-t-2 border-dashed border-gray-300 pt-3">
+                                    <span class="font-bold text-lg">${{ product.min_price }}</span>
+                                    <span class="text-xs font-bold border border-black px-1 hover:bg-black hover:text-white transition-colors">
+                                    VIEW ->
+                                </span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                {% empty %}
+                    <p class="col-span-full text-center py-8 border-2 border-dashed border-black">NO POPULAR PRODUCTS YET</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section>
+            <div class="flex justify-between items-end mb-6 border-b-2 border-black pb-2">
                 <h2 class="text-3xl font-black uppercase">CHOOSE_YOUR_SIZE</h2>
             </div>
 
